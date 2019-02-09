@@ -1,0 +1,11 @@
+module.exports = {
+	env: {
+		browser: false,
+		node: true,
+	},
+	rules: {
+		'import/no-extraneous-dependencies': ['error', {
+			devDependencies: true,
+		}]
+	},
+};
