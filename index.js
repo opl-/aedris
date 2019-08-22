@@ -1,5 +1,3 @@
-import Aedris from './lib/Aedris';
+const Aedris = require('./lib/Aedris');
 
-module.exports = {
-	Aedris,
-};
+module.exports = Aedris;

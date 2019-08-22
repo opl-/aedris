@@ -2,7 +2,9 @@ const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const VueSSRClientPlugin = require('vue-server-renderer/client-plugin');
-const base = require('./webpack.base.config');
+const base = require('./webpack.frontend.base');
+
+const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = merge(base, {
 	entry: {
@@ -10,10 +12,12 @@ module.exports = merge(base, {
 			path.resolve(__dirname, '../client/init/entry-client.ts'),
 		],
 	},
+	performance: {
+		maxEntrypointSize: 300000,
+		hints: isProd ? 'warning' : false,
+	},
 	plugins: [
 		new webpack.DefinePlugin({
-			// strip dev-only code in Vue source
-			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
 			'process.env.VUE_ENV': '"client"',
 		}),
 		// extract vendor chunks for better caching

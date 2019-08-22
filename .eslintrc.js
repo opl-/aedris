@@ -14,6 +14,7 @@ module.exports = {
 	extends: ['airbnb-base'],
 	plugins: [
 		'@typescript-eslint',
+		'html',
 	],
 	settings: {
 		// TODO: replace all this (minus `import/resolver.webpack`) with `extends: 'plugin:import/typescript'` (https://github.com/benmosher/eslint-plugin-import/commit/bdc05aa1d029b70125ae415e5ca5dca22250858b)
@@ -23,19 +24,20 @@ module.exports = {
 		},
 		'import/resolver': {
 			webpack: {
-				config: path.resolve(__dirname, 'build/webpack.base.config.js'),
+				config: path.resolve(__dirname, 'build/webpack.frontend.base.js'),
 			},
 			node: {
 				extensions: ['.js', '.ts'],
 			}
-	  	},
+		},
 	},
 	rules: {
+		// Don't require extensions when importing.
 		'import/extensions': ['error', 'always', {
 			js: 'never',
 			ts: 'never',
 		}],
-		// custom properties because airbnb is not perfect
+		// Custom rules because airbnb is not perfect.
 		'space-before-function-paren': ['error', {
 			anonymous: 'never',
 			named: 'never',
@@ -43,6 +45,7 @@ module.exports = {
 		}],
 		'no-plusplus': 'off',
 		'no-nested-ternary': 'off',
+		// Tabs allow different users to use different indentation levels without changing the files.
 		indent: ['error', 'tab'],
 		'object-curly-spacing': ['error', 'never'],
 		'no-tabs': 'off',
@@ -67,6 +70,6 @@ module.exports = {
 			exceptAfterSingleLine: true,
 		}],
 		// allow debugger during development
-		'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
+		'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 	},
 };
