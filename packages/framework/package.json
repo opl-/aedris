@@ -1,0 +1,48 @@
+{
+  "name": "@aedris/framework",
+  "version": "0.1.0",
+  "description": "The Vue and Koa based web framework.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris#readme",
+  "license": "MIT",
+  "main": "dist/build.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "prepare": "npm run lint && npm run build",
+    "prestart": "npm run build",
+    "lint": "eslint --ext .js,.ts lib/",
+    "build": "tsc && aedris build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "@types/koa": "^2.0.49",
+    "koa": "^2.8.1",
+    "tapable": "^1.1.3",
+    "vue": "^2.6.10",
+    "vue-loader": "^15.7.1",
+    "vue-router": "^3.1.2",
+    "vue-server-renderer": "^2.6.10",
+    "vue-template-compiler": "^2.6.10",
+    "webpack-merge": "^4.2.2"
+  },
+  "devDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "@aedris/eslint-config-vue": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@aedris/build-tools": "^0.1.0"
+  }
+}

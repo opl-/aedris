@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"noImplicitAny": true,
+		"alwaysStrict": true,
+		"strictNullChecks": true,
+		"preserveConstEnums": true,
+		"esModuleInterop": true,
+		"outDir": "./dist/",
+		"sourceMap": true,
+		"declaration": true
+	},
+	"include": [
+		"lib/**/*"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

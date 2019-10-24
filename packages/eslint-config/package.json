@@ -1,0 +1,34 @@
+{
+  "name": "@aedris/eslint-config",
+  "version": "1.0.0",
+  "description": "ESLint rules for Aedris based on AirBnB, with TypeScript support.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris/packages/eslint-config#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "@aedris/eslint-config-vanilla": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.5.3"
+  },
+  "peerDependencies": {
+    "typescript": "^3.5.3"
+  }
+}

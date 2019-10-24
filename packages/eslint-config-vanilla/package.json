@@ -1,0 +1,27 @@
+{
+  "name": "@aedris/eslint-config-vanilla",
+  "version": "1.0.0",
+  "description": "Lerna config for non-TypeScript projects.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris/packages/eslint-config-vanilla#readme",
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  }
+}
