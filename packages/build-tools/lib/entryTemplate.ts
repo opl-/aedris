@@ -1,10 +1,10 @@
-export default function entryTemplate(modules: string[], dynamicModules: Record<string, string>): string {
+export default function entryTemplate(plugins: string[], dynamicModules: Record<string, string>): string {
 	return `import RuntimeModuleLoader from '@aedris/build-tools/dist/RuntimeModuleLoader';
 
 const loader = new RuntimeModuleLoader();
 [
-	${modules.map((m) => `[${JSON.stringify(m)}, import(${JSON.stringify(m)})]`).join(', ')}
-].forEach((module) => loader.registerModule(module[0], module[1]));
+	${plugins.map((m) => `[${JSON.stringify(m)}, import(${JSON.stringify(m)})]`).join(', ')}
+].forEach((plugin) => loader.registerPlugin(plugin[0], plugin[1]));
 
 [
 	${Object.entries(dynamicModules).map(([name, path]) => `[${JSON.stringify(name)}, import(${JSON.stringify(path)})]`).join(', ')}

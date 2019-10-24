@@ -1,6 +1,6 @@
 import {AsyncParallelHook} from 'tapable';
 
-export interface RuntimeModule {
+export interface RuntimePlugin {
 	hookApp?(loader: RuntimeModuleLoader): void;
 }
 
@@ -9,16 +9,16 @@ export default class RuntimeModuleLoader {
 		init: new AsyncParallelHook(),
 	};
 
-	modules: Record<string, any> = {};
+	plugins: Record<string, any> = {};
 	dynamicModules: Record<string, any> = {};
 
-	getModule(moduleName: string): any {
-		return this.modules[moduleName];
+	getPlugin(pluginName: string): any {
+		return this.plugins[pluginName];
 	}
 
-	registerModule(moduleName: string, moduleExport: any) {
+	registerPlugin(pluginName: string, pluginExport: any) {
 		// TODO: resolve promises in exports?
-		this.modules[moduleName] = moduleExport;
+		this.plugins[pluginName] = pluginExport;
 	}
 
 	getDynamicModule(dynamicModuleName: string): any {
@@ -29,15 +29,15 @@ export default class RuntimeModuleLoader {
 		this.dynamicModules[dynamicModuleName] = moduleExport;
 	}
 
-	async start(initializingModuleName?: string, initializingModule?: any) {
-		if (initializingModuleName) {
-			// Enables modules that need to act as bundle entry points to expose themselves to other modules
-			this.modules[initializingModuleName] = initializingModule;
+	async start(initializingPluginName?: string, initializingPlugin?: any) {
+		if (initializingPluginName) {
+			// Enables plugins that need to act as bundle entry points to expose themselves to other plugins
+			this.plugins[initializingPluginName] = initializingPlugin;
 		}
 
-		Object.values(this.modules).forEach((module) => {
+		Object.values(this.plugins).forEach((plugin) => {
 			// Call hookApp only if it exists
-			if (module && typeof module.hookApp === 'function') module.hookApp(this);
+			if (plugin && typeof plugin.hookApp === 'function') plugin.hookApp(this);
 		});
 
 		await this.hooks.init.promise();

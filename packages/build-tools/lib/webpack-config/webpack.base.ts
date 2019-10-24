@@ -40,9 +40,9 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 				path.resolve(__dirname, '../../node_modules'),
 				// build-tools, special case for development
 				path.resolve(__dirname, '../../../../node_modules'),
-				// Registered modules
+				// Registered plugins
 				// TODO: use find-up
-				...Object.values(builder.registeredModules).map((v) => path.join(v.absolutePath, '../../node_modules')),
+				...Object.values(builder.registeredPlugins).map((v) => path.join(v.absolutePath, '../../node_modules')),
 			],
 		},
 		externals: [

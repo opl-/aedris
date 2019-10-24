@@ -1,12 +1,12 @@
 import path from 'path';
 
-export interface AedrisModuleConfig {
+export interface AedrisPluginConfig {
 	/** `true` if this config has been normalized. */
 	aedrisNormalized?: boolean;
 
 	// TODO: make use of this
-	/** If `true` this config describes an Aedris module. This changes the build configuration. */
-	isModule: boolean;
+	/** If `true` this config describes an Aedris plugin. This changes the build configuration. */
+	isPlugin: boolean;
 
 	/** Root directory of the project. All relative paths are resolved from this directory. Defaults to the location of the config. */
 	rootDir: string;
@@ -18,28 +18,28 @@ export interface AedrisModuleConfig {
 	/** Output directory for the build artifacts. Should be relative to the `rootDir`. Defaults to `./dist`. */
 	outputDir: string;
 
-	/** Array of modules to register. Modules can be passed either in the form of a package name or a file path relative to the config file. */
-	modules: string[];
+	/** Array of plugins to register. Plugins can be passed either in the form of a package name or a file path relative to the config file. */
+	plugins: string[];
 }
 
-export interface AedrisAppConfig extends AedrisModuleConfig {
+export interface AedrisAppConfig extends AedrisPluginConfig {
 	/** URL from which the assets will be served. See https://webpack.js.org/configuration/output/#outputpublicpath */
 	publicPath: string;
 }
 
 export function isAppConfig(config: {[prop: string]: any}): config is AedrisAppConfig {
-	return !config.isModule;
+	return !config.isPlugin;
 }
 
 export class AedrisConfigHandler {
-	static async loadConfig(configPath: string): Promise<AedrisModuleConfig | false> {
+	static async loadConfig(configPath: string): Promise<AedrisPluginConfig | false> {
 		try {
 			// eslint-disable-next-line global-require, import/no-dynamic-require
 			const configData = require(configPath);
 
 			// TODO: actually verify the config
 
-			return AedrisConfigHandler.normalizeConfig(path.dirname(configPath), configData as AedrisModuleConfig);
+			return AedrisConfigHandler.normalizeConfig(path.dirname(configPath), configData as AedrisPluginConfig);
 		} catch (ex) {
 			if (ex.code === 'ENOENT') {
 				return false;
@@ -57,7 +57,7 @@ export class AedrisConfigHandler {
 	 * @param originalConfig Config to normalize
 	 * @returns A cloned config object with resolved paths
 	 */
-	static normalizeConfig<T extends AedrisModuleConfig | AedrisAppConfig>(configDir: string, originalConfig: T): T {
+	static normalizeConfig<T extends AedrisPluginConfig | AedrisAppConfig>(configDir: string, originalConfig: T): T {
 		const config = this.deepClone(originalConfig) as T;
 
 		// Don't normalize the config twice
@@ -73,8 +73,8 @@ export class AedrisConfigHandler {
 		config.backendDir = this.resolvePath(config.rootDir, config.backendDir || './backend', 'backendDir');
 		config.outputDir = this.resolvePath(config.rootDir, config.outputDir || './dist', 'outputDir');
 
-		// Normalize module list
-		if (!Array.isArray(config.modules)) config.modules = [];
+		// Normalize plugin list
+		if (!Array.isArray(config.plugins)) config.plugins = [];
 
 		if (isAppConfig(config)) {
 			if (config.publicPath) config.publicPath = config.publicPath || '/_/res/';

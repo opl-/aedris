@@ -1,7 +1,7 @@
-import {AedrisModule, Builder, DefaultContext} from '@aedris/build-tools';
+import {AedrisPlugin, Builder, DefaultContext} from '@aedris/build-tools';
 import path from 'path';
 
-export default <AedrisModule> {
+export default <AedrisPlugin> {
 	hookBuild(builder: Builder): void {
 		builder.hooks.registerTargets.tapPromise('@aedris/framework/buildSelf', (b) => Promise.all([
 			b.createTarget({

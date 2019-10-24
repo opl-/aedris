@@ -1,6 +1,6 @@
 # The Aedris Project
 
-Aedris aims to ease the process of starting new and updating old projects by taking over and delegating management of webpack configs and boilerplate code to easy to install modules.
+Aedris aims to ease the process of starting new and updating old projects by taking over and delegating management of webpack configs and boilerplate code to easy to install plugins.
 
 
 ## Contributing

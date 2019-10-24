@@ -1,4 +1,4 @@
-import {AedrisModule, Builder, DefaultContext} from '@aedris/build-tools';
+import {AedrisPlugin, Builder, DefaultContext} from '@aedris/build-tools';
 import path from 'path';
 import {VueLoaderPlugin} from 'vue-loader';
 import VueSSRClientPlugin from 'vue-server-renderer/client-plugin';
@@ -9,11 +9,11 @@ import merge from 'webpack-merge';
 
 const HOOK_NAME = '@aedris/framework';
 
-export default <AedrisModule> {
+export default <AedrisPlugin> {
 	hookBuild(builder: Builder): void {
 		builder.hooks.registerTargets.tapPromise(HOOK_NAME, (b) => {
-			if (builder.config.isModule) {
-				// Create targets for modules using standardized entry point paths for modules
+			if (builder.config.isPlugin) {
+				// Create targets for plugins using standardized entry point paths for plugins
 				return Promise.all([
 					b.createTarget({
 						context: DefaultContext.BACKEND,
@@ -82,8 +82,8 @@ export default <AedrisModule> {
 					plugins: [
 						// TODO: config
 						new VueLoaderPlugin(),
-						...(target.builder.config.isModule ? [
-							// Do not create SSR bundles for modules
+						...(target.builder.config.isPlugin ? [
+							// Do not create SSR bundles for plugins
 						] : target.context === DefaultContext.FRONTEND_SERVER ? [
 							// Use the SSR plugin to create a server bundle
 							new VueSSRServerPlugin(),

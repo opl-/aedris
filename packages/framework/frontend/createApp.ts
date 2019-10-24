@@ -1,4 +1,4 @@
-import {RuntimeModule} from '@aedris/build-tools/dist/RuntimeModuleLoader';
+import {RuntimePlugin} from '@aedris/build-tools/dist/RuntimeModuleLoader';
 import {SyncHook, SyncWaterfallHook} from 'tapable';
 import Vue, {ComponentOptions} from 'vue';
 import {RouterOptions} from 'vue-router';
@@ -16,7 +16,7 @@ export interface FrameworkAppOptions {
 	context: AppContext;
 }
 
-export class FrameworkApp implements RuntimeModule {
+export class FrameworkApp implements RuntimePlugin {
 	hooks = {
 		initRootOptions: new SyncWaterfallHook<ComponentOptions<Vue>, FrameworkApp>(['rootOptions', 'frameworkApp']),
 		initRouterOptions: new SyncWaterfallHook<RouterOptions, FrameworkApp>(['routerOptions', 'frameworkApp']),

@@ -39,7 +39,7 @@ export default function createCommand(yargs: Argv): Argv {
 		const builder = new Builder({configPath});
 
 		builder.hooks.registerTargets.tapPromise('@aedris/build-tools/commandBuild', async (b) => {
-			if (b.config.isModule) {
+			if (b.config.isPlugin) {
 				// TODO: this should absolutely not be here
 				// TODO: this should probably be a separate build to remove the need for precompiling the build scripts with tsc
 				await Promise.all([
@@ -68,7 +68,7 @@ export default function createCommand(yargs: Argv): Argv {
 
 			if (argv.printWebpack) {
 				if (builder.targets.length === 0) {
-					console.log('== No targets (and therefore Webpack configs) found. Are you missing a base module?');
+					console.log('== No targets (and therefore Webpack configs) found. Are you missing a base plugin?');
 				} else {
 					builder.targets.forEach((target, index) => {
 						console.log(`\n== Config for target #${index} (context ${JSON.stringify(target.context)}):\n${inspect(target.webpackConfig, inspectOptions)}`);

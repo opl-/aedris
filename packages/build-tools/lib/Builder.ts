@@ -3,14 +3,14 @@ import {AsyncParallelHook, SyncHook, SyncWaterfallHook} from 'tapable';
 import {promisify} from 'util';
 import webpack, {Configuration, MultiCompiler, MultiWatching} from 'webpack';
 
-import {AedrisConfigHandler, AedrisModuleConfig} from './AedrisConfigHandler';
+import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
 import {BuildTarget, TargetOptions} from './BuildTarget';
 
 // TODO: clear output directories, making sure they are inside the app root and that they aren't the drive root
 
 const log = debug('aedris:build-tools');
 
-export interface AedrisModule {
+export interface AedrisPlugin {
 	hookBuild(builder: Builder): void;
 }
 
@@ -19,12 +19,12 @@ interface BuilderOptions {
 	configPath?: string;
 
 	/** Config object to be used instead of the config file. Takes precedence over the `configPath` option. */
-	config?: AedrisModuleConfig;
+	config?: AedrisPluginConfig;
 }
 
-interface ModuleInfo {
+interface PluginInfo {
 	absolutePath: string;
-	module: AedrisModule;
+	plugin: AedrisPlugin;
 }
 
 export class Builder {
@@ -33,12 +33,11 @@ export class Builder {
 
 	rootDir: string;
 	configPath?: string;
-	rawConfig?: AedrisModuleConfig;
-	config: AedrisModuleConfig;
+	rawConfig?: AedrisPluginConfig;
+	config: AedrisPluginConfig;
 
-	registeredModules: {[moduleName: string]: ModuleInfo};
+	registeredPlugins: {[pluginName: string]: PluginInfo};
 
-	// TODO: i don't like the name "dynamic modules". it's too close to aedris modules. maybe aedris modules should be renamed to plugins? seems like a more obvious name, tbh
 	/** List of paths to modules that can have a varying path in the project. */
 	projectDynamicModules: {[moduleName: string]: string} = {};
 
@@ -48,7 +47,7 @@ export class Builder {
 	targets: BuildTarget[] = [];
 
 	hooks = {
-		normalizeConfig: new SyncWaterfallHook<AedrisModuleConfig>(['config']),
+		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
 		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
 		prepareWebpackConfig: new SyncWaterfallHook<Configuration, BuildTarget>(['webpackConfig', 'target']),
@@ -83,12 +82,12 @@ export class Builder {
 		} else {
 			log('Using provided config');
 
-			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig as AedrisModuleConfig);
+			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig as AedrisPluginConfig);
 		}
 
-		await this.loadModules();
+		await this.loadPlugins();
 
-		log('Passing config to modules');
+		log('Passing config to plugins');
 
 		this.config = this.hooks.normalizeConfig.call(this.rawConfig);
 
@@ -114,30 +113,30 @@ export class Builder {
 		return this;
 	}
 
-	async loadModules(): Promise<void> {
-		if (!this.rawConfig) throw new Error('No config loaded while trying to load modules');
+	async loadPlugins(): Promise<void> {
+		if (!this.rawConfig) throw new Error('No config loaded while trying to load plugins');
 
-		log('Registering %i modules', this.rawConfig.modules.length);
+		log('Registering %i plugins', this.rawConfig.plugins.length);
 
-		this.registeredModules = {};
+		this.registeredPlugins = {};
 		// eslint-disable-next-line no-restricted-syntax
-		for (const moduleName of this.rawConfig.modules) {
-			const modulePath = require.resolve(moduleName, {
+		for (const pluginName of this.rawConfig.plugins) {
+			const pluginPath = require.resolve(pluginName, {
 				paths: [
 					this.rawConfig.rootDir,
 				],
 			});
 
 			// eslint-disable-next-line no-await-in-loop
-			const aedrisModule: AedrisModule = (await import(modulePath)).default;
+			const aedrisPlugin: AedrisPlugin = (await import(pluginPath)).default;
 
-			this.registeredModules[moduleName] = {
-				absolutePath: modulePath,
-				module: aedrisModule,
+			this.registeredPlugins[pluginName] = {
+				absolutePath: pluginPath,
+				plugin: aedrisPlugin,
 			};
 
 			// Call hook only if it exists
-			if (aedrisModule && typeof aedrisModule.hookBuild === 'function') aedrisModule.hookBuild(this);
+			if (aedrisPlugin && typeof aedrisPlugin.hookBuild === 'function') aedrisPlugin.hookBuild(this);
 		}
 	}
 

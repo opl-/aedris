@@ -1,6 +1,6 @@
 module.exports = {
-	isModule: true,
-	modules: [
+	isPlugin: true,
+	plugins: [
 		'./dist/buildSelf.js',
 	],
 };

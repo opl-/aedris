@@ -23,7 +23,7 @@ export interface TargetOptions {
 	// TODO: improve/verify docs
 	/**
 	 * Intended entry point(s) for this target. The last entry point will be used as the bundle entry point and must call `require('@aedris/entry').start()`, optionally with arguments to expose
-	 * itself to other modules.
+	 * itself to other plugins.
 	 * */
 	entry: {[entryName: string]: string | string[]};
 
@@ -76,15 +76,15 @@ export class BuildTarget {
 	}
 
 	createConfig(): void {
-		if (!this.builder.config.isModule) {
+		if (!this.builder.config.isPlugin) {
 			// Compute entry points to ensure they include the generated entry point for apps
-			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryModuleNames]) => {
-				// Allow build scripts to specify order of modules in the entry script
-				acc[entryName] = entryModuleNames.some((m) => m.startsWith('@aedris/entry')) ? entryModuleNames : ['@aedris/entry/index.js', ...entryModuleNames];
+			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryPluginNames]) => {
+				// Allow build scripts to specify order of plugins in the entry script
+				acc[entryName] = entryPluginNames.some((m) => m.startsWith('@aedris/entry')) ? entryPluginNames : ['@aedris/entry/index.js', ...entryPluginNames];
 				return acc;
 			}, {} as Record<string, string[]>);
 		} else {
-			// Modules don't need to have any modifications done to their entry points
+			// Plugins don't need to have any modifications done to their entry points
 			this.entry = this.rawEntry;
 		}
 
@@ -94,12 +94,12 @@ export class BuildTarget {
 	}
 
 	generateEntry(): void {
-		// TODO: map modules to load according to their exported entry points for different targets
+		// TODO: map plugins to load according to their exported entry points for different targets
 		// TODO: resolve.mainFields might actually do exactly what I want! https://webpack.js.org/configuration/resolve/#resolvemainfields + https://github.com/defunctzombie/package-browser-field-spec
-		// const loadModules = Object.keys(this.builder.registeredModules);
-		const loadModules: string[] = [];
+		// const loadPlugins = Object.keys(this.builder.registeredPlugins);
+		const loadPlugins: string[] = [];
 
-		// TODO: module hooks into the app should probably be per target...
-		this.virtualModules.writeModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadModules, this.builder.projectDynamicModules));
+		// TODO: plugin hooks into the app should probably be per target...
+		this.virtualModules.writeModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins, this.builder.projectDynamicModules));
 	}
 }

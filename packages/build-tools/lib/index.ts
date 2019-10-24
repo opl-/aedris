@@ -1,8 +1,8 @@
-import {AedrisModule, Builder} from './Builder';
+import {AedrisPlugin, Builder} from './Builder';
 import {BuildTarget, DefaultContext} from './BuildTarget';
 
 export {
-	AedrisModule,
+	AedrisPlugin,
 	Builder,
 	BuildTarget,
 	DefaultContext,
