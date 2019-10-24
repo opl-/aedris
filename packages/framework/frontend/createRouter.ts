@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Router, {RouterOptions} from 'vue-router';
 
 import {FrameworkApp} from './createApp';
-import runtimeModuleLoader from './runtimeModuleLoader';
 
 Vue.use(Router);
 
@@ -12,7 +11,8 @@ export default function createRouter(frameworkApp: FrameworkApp): Router {
 	};
 
 	// Try to get the default app config from the app itself
-	const dynamicRouter = runtimeModuleLoader.getDynamicModule('@aedris/framework:router');
+	// eslint-disable-next-line global-require, import/no-unresolved
+	const dynamicRouter = require('@aedris/dynamic/@aedris/framework:router');
 
 	if (dynamicRouter) {
 		// TODO: improve this error message (module path)

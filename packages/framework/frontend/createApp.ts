@@ -1,11 +1,11 @@
-import {RuntimePlugin} from '@aedris/build-tools/dist/RuntimeModuleLoader';
+import {RuntimePlugin} from '@aedris/build-tools/dist/RuntimePluginLoader';
 import {SyncHook, SyncWaterfallHook} from 'tapable';
 import Vue, {ComponentOptions} from 'vue';
 import {RouterOptions} from 'vue-router';
 
 import AppRoot from './component/AppRoot';
 import createRouter from './createRouter';
-import runtimeModuleLoader from './runtimeModuleLoader';
+import runtimePluginLoader from './runtimePluginLoader';
 
 export interface AppContext {
 	/** Path to render. `undefined` in a browser context. */
@@ -46,16 +46,12 @@ export class FrameworkApp implements RuntimePlugin {
 }
 
 export default async function createApp(context: AppContext = {}): Promise<FrameworkApp> {
-	// Import the entry point and start the application
-	// XXX: moved out into its own file
-	// eslint-disable-next-line global-require, import/no-unresolved
-	// const runtimeModuleLoader: RuntimeModuleLoader = require('@aedris/entry/index.js').default;
-
+	// Start the application
 	const app = new FrameworkApp({
 		context,
 	});
 
-	await runtimeModuleLoader.start('@aedris/framework', app);
+	await runtimePluginLoader.start('@aedris/framework', app);
 
 	return app;
 }

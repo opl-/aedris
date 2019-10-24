@@ -93,6 +93,17 @@ export default <AedrisPlugin> {
 						] : []),
 					],
 				});
+
+				// Enable ts-loader option to make TypeScript work with Vue single file components
+				// Unnecessary if to make TypeScript compiler shut up
+				if (output.module && output.module.rules) {
+					output.module.rules.filter((r) => r.loader === 'ts-loader').forEach((rule) => {
+						/* eslint-disable no-param-reassign */
+						rule.options = rule.options || {};
+						(rule.options as any).appendTsSuffixTo = [/\.vue$/];
+						/* eslint-enable no-param-reassign */
+					});
+				}
 			}
 
 			return output;

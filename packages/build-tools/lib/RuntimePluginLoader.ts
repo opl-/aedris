@@ -1,16 +1,15 @@
 import {AsyncParallelHook} from 'tapable';
 
 export interface RuntimePlugin {
-	hookApp?(loader: RuntimeModuleLoader): void;
+	hookApp?(loader: RuntimePluginLoader): void;
 }
 
-export default class RuntimeModuleLoader {
+export default class RuntimePluginLoader {
 	hooks = {
 		init: new AsyncParallelHook(),
 	};
 
 	plugins: Record<string, any> = {};
-	dynamicModules: Record<string, any> = {};
 
 	getPlugin(pluginName: string): any {
 		return this.plugins[pluginName];
@@ -19,14 +18,6 @@ export default class RuntimeModuleLoader {
 	registerPlugin(pluginName: string, pluginExport: any) {
 		// TODO: resolve promises in exports?
 		this.plugins[pluginName] = pluginExport;
-	}
-
-	getDynamicModule(dynamicModuleName: string): any {
-		return this.dynamicModules[dynamicModuleName];
-	}
-
-	registerDynamicModule(dynamicModuleName: string, moduleExport: any) {
-		this.dynamicModules[dynamicModuleName] = moduleExport;
 	}
 
 	async start(initializingPluginName?: string, initializingPlugin?: any) {

@@ -30,6 +30,13 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 		resolve: {
 			// Consider TypeScript files while resolving files
 			extensions: ['.wasm', '.mjs', '.js', '.ts', '.json'],
+			alias: {
+				// Dynamic modules support
+				...Object.entries(builder.dynamicAppModules).reduce((acc, [dynamicModuleName, dynamicModulePath]) => {
+					acc[`@aedris/dynamic/${dynamicModuleName}$`] = dynamicModulePath;
+					return acc;
+				}, {} as Record<string, string>),
+			},
 		},
 		resolveLoader: {
 			// Allow resolving modules from:

@@ -100,6 +100,6 @@ export class BuildTarget {
 		const loadPlugins: string[] = [];
 
 		// TODO: plugin hooks into the app should probably be per target...
-		this.virtualModules.writeModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins, this.builder.projectDynamicModules));
+		this.virtualModules.writeModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins));
 	}
 }

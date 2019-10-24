@@ -39,7 +39,7 @@ export class Builder {
 	registeredPlugins: {[pluginName: string]: PluginInfo};
 
 	/** List of paths to modules that can have a varying path in the project. */
-	projectDynamicModules: {[moduleName: string]: string} = {};
+	dynamicAppModules: {[moduleName: string]: string} = {};
 
 	webpackCompiler: MultiCompiler;
 	webpackWatcher: MultiWatching;
@@ -91,11 +91,11 @@ export class Builder {
 
 		this.config = this.hooks.normalizeConfig.call(this.rawConfig);
 
+		await this.registerDynamicModules();
+
 		log('Creating targets');
 
 		await this.hooks.registerTargets.promise(this);
-
-		await this.linkDynamicModules();
 
 		log('Creating webpack compiler');
 
@@ -140,19 +140,19 @@ export class Builder {
 		}
 	}
 
-	async linkDynamicModules() {
-		this.projectDynamicModules = {};
+	async registerDynamicModules() {
+		this.dynamicAppModules = {};
 
 		log('Registering dynamic modules');
 
 		await this.hooks.registerDynamicModules.promise(this);
 
-		log('Registered %i dynamic modules', Object.keys(this.projectDynamicModules).length);
+		log('Registered %i dynamic modules', Object.keys(this.dynamicAppModules).length);
 	}
 
 	setDynamicModule(dynamicModuleName: string, modulePath: string) {
 		// TODO: webpack's resolve.alias might work here too and would be much less troublesome
-		this.projectDynamicModules[dynamicModuleName] = modulePath;
+		this.dynamicAppModules[dynamicModuleName] = modulePath;
 	}
 
 	// TODO: why is this async?
