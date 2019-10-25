@@ -1,6 +1,6 @@
-import util from 'util';
 import {Configuration} from 'webpack';
-import WebpackVirtualModules from 'webpack-virtual-modules';
+import ChainConfig from 'webpack-chain';
+import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 import {Builder} from './Builder';
 import entryTemplate from './entryTemplate';
@@ -14,7 +14,7 @@ export enum DefaultContext {
 	FRONTEND_SERVER = 'frontend-server',
 }
 
-export type WebpackConfigCreator = (target: BuildTarget) => Configuration;
+export type WebpackConfigCreator = (target: BuildTarget) => ChainConfig;
 
 export interface TargetOptions {
 	/** Context used for building this target */
@@ -39,7 +39,10 @@ const contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
 
 export class BuildTarget {
 	builder: Builder;
-	virtualModules: WebpackVirtualModules;
+
+	/** Map of virtual modules that will exist for this target. */
+	virtualModules: Record<string, string> = {};
+	virtualModulesPlugin?: VirtualModulesPlugin;
 
 	/** Context used for building this target */
 	context: string;
@@ -59,14 +62,6 @@ export class BuildTarget {
 	constructor(owner: Builder, opts: TargetOptions) {
 		this.builder = owner;
 
-		this.virtualModules = new WebpackVirtualModules();
-		(this.virtualModules as any)[util.inspect.custom] = function inspectVirtualModulesPlugin(depth: number, options: any) {
-			return `${options.stylize('VirtualModulesPlugin', 'name')} ${util.inspect({
-				// eslint-disable-next-line no-underscore-dangle
-				virtualModules: (this as any)._compiler.inputFileSystem._virtualFiles,
-			}, {...options, depth: options.depth && options.depth - 1})}`;
-		};
-
 		this.context = opts.context;
 		this.rawEntry = Object.entries(opts.entry).reduce((acc, [name, value]) => {
 			acc[name] = (Array.isArray(value) ? value : [value]);
@@ -76,6 +71,10 @@ export class BuildTarget {
 	}
 
 	createConfig(): void {
+		// Clear virtual modules for every new webpack config to ensure nothing breaks
+		this.virtualModules = {};
+		this.virtualModulesPlugin = undefined;
+
 		if (!this.builder.config.isPlugin) {
 			// Compute entry points to ensure they include the generated entry point for apps
 			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryPluginNames]) => {
@@ -88,9 +87,19 @@ export class BuildTarget {
 			this.entry = this.rawEntry;
 		}
 
-		this.webpackConfig = contextToConfigCreatorMap[this.context](this);
+		const configChain = contextToConfigCreatorMap[this.context](this);
 
-		this.webpackConfig = this.builder.hooks.prepareWebpackConfig.call(this.webpackConfig, this);
+		this.webpackConfig = this.builder.hooks.prepareWebpackConfig.call(configChain, this).toConfig();
+
+		// Extract the VirtualModulesPlugin to allow modifying the modules
+		const virtualModulesPlugin = (this.webpackConfig.plugins || []).find((p) => p instanceof VirtualModulesPlugin) as VirtualModulesPlugin | undefined;
+		if (!virtualModulesPlugin) throw new Error('The required VirtualModulesPlugin is missing from the webpack config.');
+		this.virtualModulesPlugin = virtualModulesPlugin;
+
+		// Write the cached modules in case any already somehow appeared
+		Object.entries(this.virtualModules).forEach(([path, module]) => {
+			virtualModulesPlugin.writeModule(path, module);
+		});
 	}
 
 	generateEntry(): void {
@@ -100,6 +109,12 @@ export class BuildTarget {
 		const loadPlugins: string[] = [];
 
 		// TODO: plugin hooks into the app should probably be per target...
-		this.virtualModules.writeModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins));
+		this.writeVirtualModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins));
+	}
+
+	writeVirtualModule(path: string, module: string) {
+		this.virtualModules[path] = module;
+
+		if (this.virtualModulesPlugin) this.virtualModulesPlugin.writeModule(path, module);
 	}
 }

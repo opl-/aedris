@@ -3,7 +3,6 @@ import path from 'path';
 import {VueLoaderPlugin} from 'vue-loader';
 import VueSSRClientPlugin from 'vue-server-renderer/client-plugin';
 import VueSSRServerPlugin from 'vue-server-renderer/server-plugin';
-import merge from 'webpack-merge';
 
 // TODO: https://vue-loader.vuejs.org/options.html has some interesting options like cacheDirectory
 
@@ -64,49 +63,33 @@ export default <AedrisPlugin> {
 			b.setDynamicModule(`${HOOK_NAME}:router`, path.resolve(b.config.frontendDir, 'router/'));
 		});
 
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (webpackConfig, target) => {
-			let output = webpackConfig;
-
+		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			if (target.context.startsWith('frontend')) {
-				output = merge(output, {
-					resolve: {
-						// TODO: verify the array gets merged correctly
-						extensions: ['.vue'],
-					},
-					module: {
-						rules: [{
-							test: /\.vue$/,
-							loader: 'vue-loader',
-						}],
-					},
-					plugins: [
-						// TODO: config
-						new VueLoaderPlugin(),
-						...(target.builder.config.isPlugin ? [
-							// Do not create SSR bundles for plugins
-						] : target.context === DefaultContext.FRONTEND_SERVER ? [
-							// Use the SSR plugin to create a server bundle
-							new VueSSRServerPlugin(),
-						] : target.context === DefaultContext.FRONTEND_CLIENT ? [
-							// Use the SSR plugin to create a client bundle
-							new VueSSRClientPlugin(),
-						] : []),
-					],
-				});
+				// Try matching the `.vue` extension
+				config.resolve.extensions.add('.vue');
+
+				// Use `vue-loader` for `.vue` files
+				const vueRule = config.module.rule('vue').test(/\.vue$/);
+				vueRule.use('vue-loader').loader('vue-loader');
+
+				// Use the VueLoaderPlugin to enable using single file components
+				// TODO: config
+				config.plugin('vue-loader').use(VueLoaderPlugin);
+
+				if (!target.builder.config.isPlugin) {
+					// Use the SSR plugin to create a server bundle
+					if (target.context === DefaultContext.FRONTEND_SERVER) config.plugin('vue-ssr').use(VueSSRServerPlugin);
+					// Use the SSR plugin to create a client bundle
+					else if (target.context === DefaultContext.FRONTEND_CLIENT) config.plugin('vue-ssr').use(VueSSRClientPlugin);
+				}
 
 				// Enable ts-loader option to make TypeScript work with Vue single file components
-				// Unnecessary if to make TypeScript compiler shut up
-				if (output.module && output.module.rules) {
-					output.module.rules.filter((r) => r.loader === 'ts-loader').forEach((rule) => {
-						/* eslint-disable no-param-reassign */
-						rule.options = rule.options || {};
-						(rule.options as any).appendTsSuffixTo = [/\.vue$/];
-						/* eslint-enable no-param-reassign */
-					});
-				}
+				config.module.rule('typescript').use('ts-loader').options({
+					appendTsSuffixTo: [/\.vue$/],
+				});
 			}
 
-			return output;
+			return config;
 		});
 	},
 };

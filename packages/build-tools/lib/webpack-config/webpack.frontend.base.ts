@@ -1,25 +1,18 @@
-import merge from 'webpack-merge';
-
 import {WebpackConfigCreator} from '../BuildTarget';
 import createBaseConfig from './webpack.base';
 
 export default <WebpackConfigCreator> function createWebpackConfig(target) {
-	const {builder} = target;
+	const config = createBaseConfig(target);
 
-	return merge(createBaseConfig(target), {
-		mode: builder.isDevelopment ? 'development' : 'production',
-		module: {
-			// Support different style processors out of the box
-			rules: [{
-				test: /\.less$/,
-				loader: 'less-loader',
-			}, {
-				test: /\.s[ac]ss$/,
-				loader: 'sass-loader',
-			}, {
-				test: /\.styl$/,
-				loader: 'stylus-loader',
-			}],
-		},
-	});
+	// Support different style processors out of the box
+	const lessRule = config.module.rule('less').test(/\.less$/);
+	lessRule.use('less-loader').loader('less-loader');
+
+	const sassRule = config.module.rule('sass').test(/\.s[ac]ss$/);
+	sassRule.use('sass-loader').loader('sass-loader');
+
+	const stylusRule = config.module.rule('stylus').test(/\.styl$/);
+	stylusRule.use('stylus-loader').loader('stylus-loader');
+
+	return config;
 };

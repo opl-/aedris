@@ -1,7 +1,8 @@
 import debug from 'debug';
 import {AsyncParallelHook, SyncHook, SyncWaterfallHook} from 'tapable';
 import {promisify} from 'util';
-import webpack, {Configuration, MultiCompiler, MultiWatching} from 'webpack';
+import webpack, {MultiCompiler, MultiWatching} from 'webpack';
+import ChainedConfig from 'webpack-chain';
 
 import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
 import {BuildTarget, TargetOptions} from './BuildTarget';
@@ -50,7 +51,7 @@ export class Builder {
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
 		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
-		prepareWebpackConfig: new SyncWaterfallHook<Configuration, BuildTarget>(['webpackConfig', 'target']),
+		prepareWebpackConfig: new SyncWaterfallHook<ChainedConfig, BuildTarget>(['webpackConfig', 'target']),
 		// TODO: still not sure about this name but it's better than `postLoad` and matches webpack convention
 		afterLoad: new SyncHook<Builder>(['builder']),
 	};
