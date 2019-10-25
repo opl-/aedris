@@ -58,11 +58,11 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	]);
 
 	// Replace any-promise with native Promise object. See https://github.com/kevinbeaty/any-promise/issues/28
-	config.externals({'any-promise': 'Promise'});
+	((config as any).getOrCompute('externals', () => []) as any[]).push({'any-promise': 'Promise'});
 
 	// Don't include node dependencies in a node context
 	if (target.context !== DefaultContext.FRONTEND_CLIENT) {
-		config.externals(externalsGenerator({
+		((config as any).getOrCompute('externals', () => []) as any[]).push(externalsGenerator({
 			// With the exception of files that need to be processed by webpack
 			whitelist: /^@aedris\/entry(?:\/.+)?$|\.(css|s[ac]ss|styl)$/,
 		}));
