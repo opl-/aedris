@@ -79,6 +79,13 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	// TODO: this plugin recommends using `quiet: true`
 	config.plugin('error-logger').use(FriendlyErrorsPlugin, [<FriendlyErrorsPlugin.Options> {
 		clearConsole: false,
+		compilationSuccessInfo: {
+			messages: [`Aedris build target context: ${target.context}`],
+			notes: [],
+		},
+		additionalFormatters: [
+			(errors) => (errors.length === 0 ? [] : [`Aedris build target context: ${target.context}`]),
+		],
 	}]);
 
 	// Use the virtual modules plugin to allow creating entry points dynamically from configs. Virtual module creation is handled through the `BuildTarget` class.
