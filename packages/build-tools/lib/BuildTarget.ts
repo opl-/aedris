@@ -82,6 +82,13 @@ export class BuildTarget {
 		this.outputDir = opts.outputDir;
 	}
 
+	/**
+	 * Proxy for `Builder.config` that should be used for accessing the Aedris config in the context of a target to allow using different configs in a single Builder in the future.
+	 */
+	get config() {
+		return this.builder.config;
+	}
+
 	createConfig(): void {
 		// Clear virtual modules for every new webpack config to ensure nothing breaks
 		this.virtualModules = {};
@@ -90,7 +97,7 @@ export class BuildTarget {
 		// Reset externals object
 		this.externals = {};
 
-		if (!this.builder.config.isPlugin) {
+		if (!this.config.isPlugin) {
 			// Compute entry points to ensure they include the generated entry point for apps
 			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryPluginNames]) => {
 				// Allow build scripts to specify order of plugins in the entry script

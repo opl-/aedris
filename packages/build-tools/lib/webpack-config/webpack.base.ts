@@ -12,8 +12,7 @@ import externalsGenerator from '../util/externals';
 // TODO: add aliases
 
 export default <WebpackConfigCreator> function createWebpackConfig(target) {
-	const {builder, externals} = target;
-	const {config: aedrisConfig} = builder;
+	const {builder, config: aedrisConfig, externals} = target;
 
 	const config = new ChainConfig();
 

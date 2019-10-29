@@ -91,7 +91,7 @@ export default <AedrisPlugin> {
 				// TODO: config
 				config.plugin('vue-loader').use(VueLoaderPlugin);
 
-				if (!target.builder.config.isPlugin) {
+				if (!target.config.isPlugin) {
 					// Use the SSR plugin to create a server bundle
 					if (target.context === DefaultContext.FRONTEND_SERVER) config.plugin('vue-ssr').use(VueSSRServerPlugin);
 					// Use the SSR plugin to create a client bundle
