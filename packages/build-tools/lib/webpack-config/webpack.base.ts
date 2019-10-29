@@ -12,7 +12,7 @@ import externalsGenerator from '../util/externals';
 // TODO: add aliases
 
 export default <WebpackConfigCreator> function createWebpackConfig(target) {
-	const {builder} = target;
+	const {builder, externals} = target;
 	const {config: aedrisConfig} = builder;
 
 	const config = new ChainConfig();
@@ -58,14 +58,21 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	]);
 
 	// Replace any-promise with native Promise object. See https://github.com/kevinbeaty/any-promise/issues/28
-	((config as any).getOrCompute('externals', () => []) as any[]).push({'any-promise': 'Promise'});
+	externals['any-promise'] = {'any-promise': 'Promise'};
 
 	// Don't include node dependencies in a node context
 	if (target.context !== DefaultContext.FRONTEND_CLIENT) {
-		((config as any).getOrCompute('externals', () => []) as any[]).push(externalsGenerator({
+		externals['node-externals'] = externalsGenerator({
 			// With the exception of files that need to be processed by webpack
-			whitelist: /^@aedris\/entry(?:\/.+)?$|\.(css|s[ac]ss|styl)$/,
-		}));
+			whitelist: /^\.(css|s[ac]ss|styl)$/,
+		});
+	}
+
+	// Resolve dynamic modules only when building an app
+	if (aedrisConfig.isPlugin) {
+		externals['dynamic-modules'] = function dynamicModules(context: string, request: string, callback: (err?: Error, result?: string) => void) {
+			callback(undefined, /^@aedris\/dynamic\/.+$/.test(request) ? `commonjs ${request}` : undefined);
+		};
 	}
 
 	// Rules for TypeScript files

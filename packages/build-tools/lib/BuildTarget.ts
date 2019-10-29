@@ -1,4 +1,4 @@
-import {Configuration} from 'webpack';
+import {Configuration, ExternalsElement} from 'webpack';
 import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
@@ -53,6 +53,12 @@ export class BuildTarget {
 	/** The entry points for this target, including the generated app entry point if applicable */
 	entry: {[entryName: string]: string[]};
 
+	/**
+	 * webpack externals to be used in this target. The key is used only for referencing the externals definition from other plugins and is not used in the final config. This property exists because
+	 * webpack-chain doesn't handle externals.
+	 * */
+	externals: {[externalsName: string]: ExternalsElement};
+
 	/** The output directory for this target, relative to the output directory specified in the config */
 	outputDir: string;
 
@@ -75,6 +81,9 @@ export class BuildTarget {
 		this.virtualModules = {};
 		this.virtualModulesPlugin = undefined;
 
+		// Reset externals object
+		this.externals = {};
+
 		if (!this.builder.config.isPlugin) {
 			// Compute entry points to ensure they include the generated entry point for apps
 			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryPluginNames]) => {
@@ -87,9 +96,18 @@ export class BuildTarget {
 			this.entry = this.rawEntry;
 		}
 
-		const configChain = contextToConfigCreatorMap[this.context](this);
+		let configChain = contextToConfigCreatorMap[this.context](this);
 
-		this.webpackConfig = this.builder.hooks.prepareWebpackConfig.call(configChain, this).toConfig();
+		configChain = this.builder.hooks.prepareWebpackConfig.call(configChain, this);
+
+		if (configChain.has('externals')) throw new Error('Use BuildTarget.externals for externals to allow manipulating them from other plugins');
+
+		// Construct externals
+		const externalsArray = Object.values(this.externals);
+		configChain.set('externals', externalsArray);
+
+		// Finalize config
+		this.webpackConfig = configChain.toConfig();
 
 		// Extract the VirtualModulesPlugin to allow modifying the modules
 		const virtualModulesPlugin = (this.webpackConfig.plugins || []).find((p) => p instanceof VirtualModulesPlugin) as VirtualModulesPlugin | undefined;
