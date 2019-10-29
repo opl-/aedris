@@ -28,6 +28,11 @@ export default function createCommand(yargs: Argv): Argv {
 			.option('printWebpack', {
 				description: 'Displays the final webpack config and exits',
 				type: 'boolean',
+			})
+			.option('watch', {
+				description: 'Starts webpack in watch mode',
+				alias: 'w',
+				type: 'boolean',
 			});
 	}, async (argv) => {
 		const configPath = await findUp(argv.config, {
@@ -80,6 +85,10 @@ export default function createCommand(yargs: Argv): Argv {
 			return;
 		}
 
-		await builder.build();
+		if (argv.watch) {
+			await builder.watch();
+		} else {
+			await builder.build();
+		}
 	});
 }

@@ -1,5 +1,9 @@
 import debug from 'debug';
-import {AsyncParallelHook, SyncHook, SyncWaterfallHook} from 'tapable';
+import {Stats} from 'fs';
+import path from 'path';
+import {
+	AsyncParallelHook, SyncHook, SyncWaterfallHook, SyncBailHook,
+} from 'tapable';
 import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
 import ChainedConfig from 'webpack-chain';
@@ -54,6 +58,7 @@ export class Builder {
 		prepareWebpackConfig: new SyncWaterfallHook<ChainedConfig, BuildTarget>(['webpackConfig', 'target']),
 		// TODO: still not sure about this name but it's better than `postLoad` and matches webpack convention
 		afterLoad: new SyncHook<Builder>(['builder']),
+		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 	};
 
 	constructor(opts: BuilderOptions) {
@@ -182,7 +187,15 @@ export class Builder {
 	async watch(): Promise<void> {
 		this.webpackWatcher = this.webpackCompiler.watch({
 			aggregateTimeout: 500,
-			ignored: /\/node_modules/,
+			ignored: [
+				// node_modules is too big to watch
+				/\/node_modules/,
+				// New output files should not trigger rebuilds
+				// TODO: per target config
+				path.join(this.config.outputDir, '**'),
+				// Allow plugins to ignore files
+				(filePath, stats) => !!this.hooks.watchShouldIgnore.call(filePath, stats as unknown as Stats),
+			],
 		}, (err, stats) => {
 			if (err) {
 				// TODO: fix this mess
