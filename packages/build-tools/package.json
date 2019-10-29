@@ -29,7 +29,7 @@
     "url": "https://github.com/opl-/aedris/issues"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12.11"
   },
   "dependencies": {
     "@types/webpack-virtual-modules": "^0.1.0",
@@ -51,7 +51,7 @@
     "@aedris/eslint-config": "^1.0.0",
     "@types/debug": "^4.1.5",
     "@types/friendly-errors-webpack-plugin": "^0.1.2",
-    "@types/node": "^12.7.2",
+    "@types/node": "12.11.7",
     "@types/tapable": "^1.0.4",
     "@types/webpack": "^4.39.1",
     "@types/yargs": "^13.0.2"

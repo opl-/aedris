@@ -1,5 +1,5 @@
 import debug from 'debug';
-import {Stats} from 'fs';
+import {promises as fs, Stats} from 'fs';
 import path from 'path';
 import {
 	AsyncParallelHook, SyncHook, SyncWaterfallHook, SyncBailHook,
@@ -10,8 +10,6 @@ import ChainedConfig from 'webpack-chain';
 
 import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
 import {BuildTarget, TargetOptions} from './BuildTarget';
-
-// TODO: clear output directories, making sure they are inside the app root and that they aren't the drive root
 
 const log = debug('aedris:build-tools');
 
@@ -180,11 +178,34 @@ export class Builder {
 		return target;
 	}
 
+	async clearOutputs(): Promise<void> {
+		const outputDirectories = this.targets
+			.map((t) => {
+				if (!t.webpackConfig.output || !t.webpackConfig.output.path) return false;
+				// Skip path if it's the drive root
+				if (path.resolve(t.webpackConfig.output.path, '..') === t.webpackConfig.output.path) return false;
+
+				return t.webpackConfig.output.path;
+			})
+			// Remove falsy values and duplicates
+			.filter((p, index, arr) => p && !arr.slice(0, index).includes(p)) as string[];
+
+		if (process.env.AEDRIS_SIMULATE) return void console.log('Would remove:', outputDirectories);
+
+		await Promise.all(outputDirectories.map((dir) => fs.rmdir(dir, {
+			recursive: true,
+		})));
+	}
+
 	async build(): Promise<void> {
+		await this.clearOutputs();
+
 		await promisify(this.webpackCompiler.run.bind(this.webpackCompiler))();
 	}
 
 	async watch(): Promise<void> {
+		await this.clearOutputs();
+
 		this.webpackWatcher = this.webpackCompiler.watch({
 			aggregateTimeout: 500,
 			ignored: [
