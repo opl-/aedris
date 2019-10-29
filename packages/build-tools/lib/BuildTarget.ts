@@ -17,6 +17,9 @@ export enum DefaultContext {
 export type WebpackConfigCreator = (target: BuildTarget) => ChainConfig;
 
 export interface TargetOptions {
+	/** The name used to refer to this target. Must be unique for the Builder instance. */
+	name: string;
+
 	/** Context used for building this target */
 	context: string;
 
@@ -38,6 +41,8 @@ const contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
 };
 
 export class BuildTarget {
+	name: string;
+
 	builder: Builder;
 
 	/** Map of virtual modules that will exist for this target. */
@@ -68,6 +73,7 @@ export class BuildTarget {
 	constructor(owner: Builder, opts: TargetOptions) {
 		this.builder = owner;
 
+		this.name = opts.name;
 		this.context = opts.context;
 		this.rawEntry = Object.entries(opts.entry).reduce((acc, [name, value]) => {
 			acc[name] = (Array.isArray(value) ? value : [value]);

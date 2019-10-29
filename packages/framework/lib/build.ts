@@ -15,6 +15,7 @@ export default <AedrisPlugin> {
 				// Create targets for plugins using standardized entry point paths for plugins
 				return Promise.all([
 					b.createTarget({
+						name: '@aedris/framework/plugin-backend-bundle',
 						context: DefaultContext.BACKEND,
 						entry: {
 							backend: path.resolve(b.config.backendDir, 'index.ts'),
@@ -22,6 +23,7 @@ export default <AedrisPlugin> {
 						outputDir: './backend/',
 					}),
 					b.createTarget({
+						name: '@aedris/framework/plugin-frontend-bundle',
 						context: DefaultContext.FRONTEND_SERVER,
 						entry: {
 							frontend: path.resolve(b.config.backendDir, 'index.ts'),
@@ -35,6 +37,7 @@ export default <AedrisPlugin> {
 			// TODO: this is going to skip all the project files and we don't want to skip those >.< (use generated entry)
 			return Promise.all([
 				b.createTarget({
+					name: '@aedris/framework:app-backend-bundle',
 					context: DefaultContext.BACKEND,
 					entry: {
 						backend: '@aedris/framework/dist/backend',
@@ -42,6 +45,7 @@ export default <AedrisPlugin> {
 					outputDir: './backend/',
 				}),
 				b.createTarget({
+					name: '@aedris/framework:app-frontend-client-bundle',
 					context: DefaultContext.FRONTEND_CLIENT,
 					entry: {
 						app: '@aedris/framework/dist/entryFrontendClient',
@@ -49,6 +53,7 @@ export default <AedrisPlugin> {
 					outputDir: './frontend-client/',
 				}),
 				b.createTarget({
+					name: '@aedris/framework:app-frontend-server-bundle',
 					context: DefaultContext.FRONTEND_SERVER,
 					entry: {
 						frontend: '@aedris/framework/dist/entryFrontendServer',

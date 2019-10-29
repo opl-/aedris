@@ -44,6 +44,7 @@ export default function createCommand(yargs: Argv): Argv {
 				// TODO: this should probably be a separate build to remove the need for precompiling the build scripts with tsc
 				await Promise.all([
 					b.createTarget({
+						name: '@aedris/build-tools:cmd-build-build-script',
 						context: DefaultContext.BACKEND,
 						entry: {
 							build: './lib/build.ts',
@@ -70,8 +71,8 @@ export default function createCommand(yargs: Argv): Argv {
 				if (builder.targets.length === 0) {
 					console.log('== No targets (and therefore Webpack configs) found. Are you missing a base plugin?');
 				} else {
-					builder.targets.forEach((target, index) => {
-						console.log(`\n== Config for target #${index} (context ${JSON.stringify(target.context)}):\n${inspect(target.webpackConfig, inspectOptions)}`);
+					builder.targets.forEach((target) => {
+						console.log(`\n== Config for target ${JSON.stringify(target.name)} (context ${JSON.stringify(target.context)}):\n${inspect(target.webpackConfig, inspectOptions)}`);
 					});
 				}
 			}

@@ -87,11 +87,11 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	config.plugin('error-logger').use(FriendlyErrorsPlugin, [<FriendlyErrorsPlugin.Options> {
 		clearConsole: false,
 		compilationSuccessInfo: {
-			messages: [`Aedris build target context: ${target.context}`],
+			messages: [`Aedris build target ${JSON.stringify(target.name)} (context ${JSON.stringify(target.context)})`],
 			notes: [],
 		},
 		additionalFormatters: [
-			(errors) => (errors.length === 0 ? [] : [`Aedris build target context: ${target.context}`]),
+			(errors) => (errors.length === 0 ? [] : [`Aedris build target ${JSON.stringify(target.name)} (context ${JSON.stringify(target.context)})`]),
 		],
 	}]);
 

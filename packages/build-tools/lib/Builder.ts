@@ -156,9 +156,15 @@ export class Builder {
 		this.dynamicAppModules[dynamicModuleName] = modulePath;
 	}
 
+	getTarget(targetName: string): BuildTarget | null {
+		return this.targets.find((t) => t.name === targetName) || null;
+	}
+
 	// TODO: why is this async?
 	async createTarget(opts: TargetOptions): Promise<BuildTarget> {
-		log('Creating target with context %s', opts.context);
+		log('Creating target %s with context %s', JSON.stringify(opts.name), JSON.stringify(opts.context));
+
+		if (this.getTarget(opts.name)) throw new Error(`Tried to create Target with duplicate name ${JSON.stringify(opts.name)}`);
 
 		const target = new BuildTarget(this, opts);
 
