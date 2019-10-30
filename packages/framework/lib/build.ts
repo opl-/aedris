@@ -99,8 +99,10 @@ export default <AedrisPlugin> {
 				}
 
 				// Enable ts-loader option to make TypeScript work with Vue single file components
-				config.module.rule('typescript').use('ts-loader').options({
-					appendTsSuffixTo: [/\.vue$/],
+				config.module.rule('typescript').use('ts-loader').merge({
+					options: {
+						appendTsSuffixTo: [/\.vue$/],
+					},
 				});
 			}
 

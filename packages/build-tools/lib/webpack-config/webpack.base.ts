@@ -79,7 +79,16 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	// Don't transpile TypeScript files from dependencies - those should already be built
 	typescriptRule.exclude.add(/\/node_modules/).end();
 	// Use `ts-loader`
-	typescriptRule.use('ts-loader').loader('ts-loader');
+	typescriptRule.use('ts-loader').loader('ts-loader').merge({
+		options: {
+			// Use webpack to figure out which files should be used
+			onlyCompileBundledFiles: true,
+			compilerOptions: {
+				// Put the compilation results (including .d.ts files) from this build into the appropriate output directory
+				outDir: config.output.get('path'),
+			},
+		},
+	});
 
 	// Use a nice output formatter
 	// TODO: this plugin recommends using `quiet: true`
