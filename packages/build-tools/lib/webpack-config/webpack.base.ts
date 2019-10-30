@@ -63,7 +63,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	if (target.context !== DefaultContext.FRONTEND_CLIENT) {
 		externals['node-externals'] = externalsGenerator({
 			// With the exception of files that need to be processed by webpack
-			whitelist: /^\.(css|s[ac]ss|styl)$/,
+			whitelist: /^\.(css|less|s[ac]ss|styl)$/,
 		});
 	}
 
