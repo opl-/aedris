@@ -39,7 +39,7 @@ export class AedrisConfigHandler {
 
 			// TODO: actually verify the config
 
-			return AedrisConfigHandler.normalizeConfig(path.dirname(configPath), configData as AedrisPluginConfig);
+			return AedrisConfigHandler.normalizeConfig(path.dirname(configPath), configData);
 		} catch (ex) {
 			if (ex.code === 'ENOENT') {
 				return false;
@@ -57,7 +57,7 @@ export class AedrisConfigHandler {
 	 * @param originalConfig Config to normalize
 	 * @returns A cloned config object with resolved paths
 	 */
-	static normalizeConfig<T extends AedrisPluginConfig | AedrisAppConfig>(configDir: string, originalConfig: T): T {
+	static normalizeConfig<T extends AedrisPluginConfig>(configDir: string, originalConfig: Partial<T>): T {
 		const config = this.deepClone(originalConfig) as T;
 
 		// Don't normalize the config twice

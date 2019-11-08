@@ -2,7 +2,7 @@ import debug from 'debug';
 import {promises as fs, Stats} from 'fs';
 import path from 'path';
 import {
-	AsyncParallelHook, SyncHook, SyncWaterfallHook, SyncBailHook,
+	AsyncParallelHook, SyncWaterfallHook, SyncBailHook,
 } from 'tapable';
 import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
@@ -34,7 +34,6 @@ export class Builder {
 	/** `true` if not building for production */
 	isDevelopment: boolean = process.env.NODE_ENV !== 'production';
 
-	rootDir: string;
 	configPath?: string;
 	rawConfig?: AedrisPluginConfig;
 	config: AedrisPluginConfig;
@@ -55,7 +54,7 @@ export class Builder {
 		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
 		prepareWebpackConfig: new SyncWaterfallHook<ChainedConfig, BuildTarget>(['webpackConfig', 'target']),
 		// TODO: still not sure about this name but it's better than `postLoad` and matches webpack convention
-		afterLoad: new SyncHook<Builder>(['builder']),
+		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 	};
 
@@ -74,20 +73,7 @@ export class Builder {
 	async load(): Promise<Builder> {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
 
-		if (this.configPath) {
-			log('Loading Builder using config %s', this.configPath);
-
-			const tempConfig = await AedrisConfigHandler.loadConfig(this.configPath);
-			if (tempConfig === false) throw new Error('Config could not be found');
-
-			this.rawConfig = tempConfig;
-		} else if (!this.rawConfig) {
-			throw new Error('No path to config and no config object provided');
-		} else {
-			log('Using provided config');
-
-			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig as AedrisPluginConfig);
-		}
+		await this.loadRawConfig();
 
 		await this.loadPlugins();
 
@@ -115,6 +101,25 @@ export class Builder {
 
 		log('Builder loaded');
 		return this;
+	}
+
+	async loadRawConfig(): Promise<AedrisPluginConfig> {
+		if (this.configPath) {
+			log('Loading Builder using config %s', this.configPath);
+
+			const tempConfig = await AedrisConfigHandler.loadConfig(this.configPath);
+			if (tempConfig === false) throw new Error('Config could not be found');
+
+			this.rawConfig = tempConfig;
+		} else if (!this.rawConfig) {
+			throw new Error('No path to config and no config object provided');
+		} else {
+			log('Using provided config');
+
+			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig);
+		}
+
+		return this.rawConfig;
 	}
 
 	async loadPlugins(): Promise<void> {
