@@ -2,7 +2,8 @@
 
 import 'source-map-support/register';
 import yargs, {Argv} from 'yargs';
-import commandBuild from './cli/commandBuild';
+
+import commandRun from './cli/commandRun';
 
 let args = yargs
 	.env('AEDRIS')
@@ -16,7 +17,7 @@ function apply(cmd: (args: Argv) => Argv): void {
 }
 
 [
-	commandBuild,
+	commandRun,
 ].forEach(apply);
 
 args.parse();
