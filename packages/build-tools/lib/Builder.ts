@@ -2,7 +2,7 @@ import debug from 'debug';
 import {promises as fs, Stats} from 'fs';
 import path from 'path';
 import {
-	AsyncParallelHook, SyncWaterfallHook, SyncBailHook,
+	AsyncParallelHook, SyncWaterfallHook, SyncBailHook, AsyncSeriesHook,
 } from 'tapable';
 import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
@@ -49,11 +49,12 @@ export class Builder {
 	targets: BuildTarget[] = [];
 
 	hooks = {
+		afterRawConfig: new AsyncSeriesHook<Builder>(['builder']),
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
+		afterConfig: new AsyncSeriesHook<Builder>(['builder']),
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
 		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
 		prepareWebpackConfig: new SyncWaterfallHook<ChainedConfig, BuildTarget>(['webpackConfig', 'target']),
-		// TODO: still not sure about this name but it's better than `postLoad` and matches webpack convention
 		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 	};
@@ -74,12 +75,14 @@ export class Builder {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
 
 		await this.loadRawConfig();
+		await this.hooks.afterRawConfig.promise(this);
 
 		await this.loadPlugins();
 
 		log('Passing config to plugins');
 
 		this.config = this.hooks.normalizeConfig.call(this.rawConfig);
+		await this.hooks.afterConfig.promise(this);
 
 		await this.registerDynamicModules();
 
