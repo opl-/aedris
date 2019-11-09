@@ -184,16 +184,14 @@ export class Builder {
 	}
 
 	async clearOutputs(): Promise<void> {
-		const outputDirectories = this.targets
-			.map((t) => {
-				if (!t.webpackConfig.output || !t.webpackConfig.output.path) return false;
-				// Skip path if it's the drive root
-				if (path.resolve(t.webpackConfig.output.path, '..') === t.webpackConfig.output.path) return false;
-
-				return t.webpackConfig.output.path;
-			})
-			// Remove falsy values and duplicates
-			.filter((p, index, arr) => p && !arr.slice(0, index).includes(p)) as string[];
+		// Remove the output directory specified in the config
+		const outputDirectories = ([this.config.outputDir] as (string | undefined)[])
+			// Add output directories from all targets, as those might be outside of the output dir from config
+			.concat(this.targets.map((t) => t.webpackConfig?.output?.path))
+			// Remove falsy values and paths that are the drive root
+			.filter((p) => p && path.resolve(p, '..') !== p)
+			// Remove duplicates
+			.filter((p, index, arr) => !arr.slice(0, index).includes(p)) as string[];
 
 		if (process.env.AEDRIS_SIMULATE) return void console.log('Would remove:', outputDirectories);
 
