@@ -8,7 +8,7 @@ export default <AedrisPlugin> {
 				name: '@aedris/framework:backend',
 				context: DefaultContext.BACKEND,
 				entry: {
-					backend: path.resolve(__dirname, '../backend/index.ts'),
+					backend: path.resolve(b.config.rootDir, 'backend/index.ts'),
 				},
 				outputDir: './',
 			}),
@@ -16,7 +16,7 @@ export default <AedrisPlugin> {
 				name: '@aedris/framework:frontend-client',
 				context: DefaultContext.FRONTEND_SERVER,
 				entry: {
-					entryFrontendClient: path.resolve(__dirname, '../frontend/entryClient.ts'),
+					entryFrontendClient: path.resolve(b.config.rootDir, 'frontend/entryClient.ts'),
 				},
 				outputDir: './',
 			}),
@@ -24,7 +24,7 @@ export default <AedrisPlugin> {
 				name: '@aedris/framework:frontend-server',
 				context: DefaultContext.FRONTEND_SERVER,
 				entry: {
-					entryFrontendServer: path.resolve(__dirname, '../frontend/entryServer.ts'),
+					entryFrontendServer: path.resolve(b.config.rootDir, 'frontend/entryServer.ts'),
 				},
 				outputDir: './',
 			}),

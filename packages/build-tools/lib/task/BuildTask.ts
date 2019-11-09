@@ -1,8 +1,17 @@
+import debug from 'debug';
+import {constants as fsConstants, promises as fs} from 'fs';
+import path from 'path';
 import {inspect, InspectOptions} from 'util';
 import yargs from 'yargs';
 
 import {Builder, DefaultContext} from '..';
 import Task, {InferredRunOptions} from './Task';
+import {AedrisConfigHandler, AedrisPluginConfig} from '../AedrisConfigHandler';
+
+const HOOK_NAME = '@aedris/build-tools:BuildTask';
+const LOCAL_PLUGIN_OUTPUT_DIR = './.cache/aedris/local-plugin/';
+
+const log = debug('aedris:build-tools:BuildTask');
 
 export default class BuildTask extends Task {
 	static command = {
@@ -30,22 +39,9 @@ export default class BuildTask extends Task {
 			configPath,
 		});
 
-		this.builder.hooks.registerTargets.tapPromise('@aedris/build-tools/commandBuild', async (b) => {
-			if (b.config.isPlugin) {
-				// TODO: this should absolutely not be here
-				// TODO: this should probably be a separate build to remove the need for precompiling the build scripts with tsc
-				await Promise.all([
-					b.createTarget({
-						name: '@aedris/build-tools:cmd-build-build-script',
-						context: DefaultContext.BACKEND,
-						entry: {
-							build: './lib/build.ts',
-						},
-						outputDir: './',
-					}),
-				]);
-			}
-		});
+		this.addStandardTargets();
+
+		this.addLocalPluginSupport({configPath});
 
 		await this.builder.load();
 
@@ -77,5 +73,79 @@ export default class BuildTask extends Task {
 		} else {
 			await this.builder.build();
 		}
+	}
+
+	addStandardTargets() {
+		// Register standard targets that are part of the Aedris structure
+		this.builder.hooks.registerTargets.tapPromise(HOOK_NAME, async (b) => {
+			if (b.config.isPlugin) {
+				// Add a target for build scripts used by plugins to hook into the build automatically if one exists
+				try {
+					await fs.access(path.resolve(b.config.rootDir, 'lib/build.ts'), fsConstants.R_OK);
+
+					await Promise.all([
+						b.createTarget({
+							name: '@aedris/build-tools:BuildTask/build-build-script',
+							context: DefaultContext.BACKEND,
+							entry: {
+								build: './lib/build.ts',
+							},
+							outputDir: './',
+						}),
+					]);
+				} catch (ex) {
+					// NOOP: build script doesn't exist, do nothing
+				}
+			}
+		});
+	}
+
+	addLocalPluginSupport({configPath}: {configPath: string}) {
+		// Compile local plugins written in TypeScript
+		this.builder.hooks.afterRawConfig.tapPromise(HOOK_NAME, async (b) => {
+			if (!b.rawConfig?.plugins) return;
+
+			const localPluginPaths: string[] = [];
+
+			// eslint-disable-next-line no-param-reassign
+			b.rawConfig.plugins = b.rawConfig.plugins.map((plugin) => {
+				if (!plugin.startsWith('.') || !plugin.endsWith('.ts')) return plugin;
+
+				localPluginPaths.push(plugin);
+
+				// Rewrite the local plugin path to point to the compiled plugin
+				return path.resolve(LOCAL_PLUGIN_OUTPUT_DIR, path.dirname(plugin), `${path.basename(plugin, '.ts')}.js`);
+			});
+
+			log('Found %i local plugins to compile', localPluginPaths.length);
+
+			if (localPluginPaths.length > 0) {
+				// Create a new Builder to build the local plugins
+				const localPluginBuilder = new Builder({
+					config: AedrisConfigHandler.normalizeConfig(path.dirname(configPath), {
+						isPlugin: true,
+						outputDir: LOCAL_PLUGIN_OUTPUT_DIR,
+					}),
+				});
+
+				localPluginBuilder.hooks.registerTargets.tap(HOOK_NAME, (lpb) => Promise.all(localPluginPaths.map(
+					(pluginPath) => lpb.createTarget({
+						name: `@aedris/build-tools:BuildTask:${pluginPath}`,
+						context: DefaultContext.BACKEND,
+						entry: {
+							[path.basename(pluginPath, '.ts')]: path.resolve((b.rawConfig as AedrisPluginConfig).rootDir, pluginPath),
+						},
+						outputDir: path.dirname(pluginPath),
+					}),
+				)));
+
+				log('Compiling local plugins');
+
+				await localPluginBuilder.load();
+				await localPluginBuilder.build();
+
+				log('Finished compiling local plugins');
+			}
+		});
 	}
 }

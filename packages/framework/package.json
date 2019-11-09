@@ -21,7 +21,7 @@
     "prepare": "npm run lint && npm run build",
     "prestart": "npm run build",
     "lint": "eslint --ext .js,.ts lib/",
-    "build": "tsc && aedris run build",
+    "build": "aedris run build",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {

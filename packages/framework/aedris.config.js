@@ -1,6 +1,6 @@
 module.exports = {
 	isPlugin: true,
 	plugins: [
-		'./dist/buildSelf.js',
+		'./lib/buildSelf.ts',
 	],
 };
