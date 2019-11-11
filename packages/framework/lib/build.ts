@@ -16,7 +16,7 @@ export default <AedrisPlugin> {
 				return Promise.all([
 					b.createTarget({
 						name: '@aedris/framework/plugin-backend-bundle',
-						context: DefaultContext.BACKEND,
+						context: [DefaultContext.NODE],
 						entry: {
 							backend: path.resolve(b.config.backendDir, 'index.ts'),
 						},
@@ -24,7 +24,7 @@ export default <AedrisPlugin> {
 					}),
 					b.createTarget({
 						name: '@aedris/framework/plugin-frontend-bundle',
-						context: DefaultContext.FRONTEND_SERVER,
+						context: [DefaultContext.WEB, DefaultContext.NODE],
 						entry: {
 							frontend: path.resolve(b.config.backendDir, 'index.ts'),
 						},
@@ -38,7 +38,7 @@ export default <AedrisPlugin> {
 			return Promise.all([
 				b.createTarget({
 					name: '@aedris/framework:app-backend-bundle',
-					context: DefaultContext.BACKEND,
+					context: [DefaultContext.NODE],
 					entry: {
 						backend: '@aedris/framework/dist/backend',
 					},
@@ -46,7 +46,7 @@ export default <AedrisPlugin> {
 				}),
 				b.createTarget({
 					name: '@aedris/framework:app-frontend-client-bundle',
-					context: DefaultContext.FRONTEND_CLIENT,
+					context: [DefaultContext.WEB],
 					entry: {
 						app: '@aedris/framework/dist/entryFrontendClient',
 					},
@@ -54,7 +54,7 @@ export default <AedrisPlugin> {
 				}),
 				b.createTarget({
 					name: '@aedris/framework:app-frontend-server-bundle',
-					context: DefaultContext.FRONTEND_SERVER,
+					context: [DefaultContext.WEB, DefaultContext.NODE],
 					entry: {
 						frontend: '@aedris/framework/dist/entryFrontendServer',
 					},
@@ -79,7 +79,7 @@ export default <AedrisPlugin> {
 				};
 			}
 
-			if (target.context.startsWith('frontend')) {
+			if (target.context.includes(DefaultContext.WEB)) {
 				// Try matching the `.vue` extension
 				config.resolve.extensions.add('.vue');
 
@@ -93,9 +93,9 @@ export default <AedrisPlugin> {
 
 				if (!target.config.isPlugin) {
 					// Use the SSR plugin to create a server bundle
-					if (target.context === DefaultContext.FRONTEND_SERVER) config.plugin('vue-ssr').use(VueSSRServerPlugin);
+					if (target.context.includes(DefaultContext.NODE)) config.plugin('vue-ssr').use(VueSSRServerPlugin);
 					// Use the SSR plugin to create a client bundle
-					else if (target.context === DefaultContext.FRONTEND_CLIENT) config.plugin('vue-ssr').use(VueSSRClientPlugin);
+					else config.plugin('vue-ssr').use(VueSSRClientPlugin);
 				}
 
 				// Enable ts-loader option to make TypeScript work with Vue single file components

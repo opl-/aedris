@@ -4,24 +4,23 @@ import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 import {Builder} from './Builder';
 import entryTemplate from './entryTemplate';
-import webpackConfigBackend from './webpack-config/webpack.backend';
-import webpackConfigFrontendClient from './webpack-config/webpack.frontend.client';
-import webpackConfigFrontendServer from './webpack-config/webpack.frontend.server';
+import webpackConfigBase from './webpack-config/webpack.base';
+import webpackConfigNode from './webpack-config/webpack.node';
+import webpackConfigWeb from './webpack-config/webpack.web';
 
 export enum DefaultContext {
-	BACKEND = 'backend',
-	FRONTEND_CLIENT = 'frontend-client',
-	FRONTEND_SERVER = 'frontend-server',
+	NODE = 'node',
+	WEB = 'web',
 }
 
-export type WebpackConfigCreator = (target: BuildTarget) => ChainConfig;
+export type WebpackConfigCreator = (config: ChainConfig, target: BuildTarget) => ChainConfig;
 
 export interface TargetOptions {
 	/** The name used to refer to this target. Must be unique for the Builder instance. */
 	name: string;
 
-	/** Context used for building this target */
-	context: string;
+	/** Contexts used for building this target */
+	context: string[];
 
 	// TODO: improve/verify docs
 	/**
@@ -34,13 +33,12 @@ export interface TargetOptions {
 	outputDir: string;
 }
 
-const contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
-	[DefaultContext.BACKEND]: webpackConfigBackend,
-	[DefaultContext.FRONTEND_CLIENT]: webpackConfigFrontendClient,
-	[DefaultContext.FRONTEND_SERVER]: webpackConfigFrontendServer,
-};
-
 export class BuildTarget {
+	static contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
+		[DefaultContext.NODE]: webpackConfigNode,
+		[DefaultContext.WEB]: webpackConfigWeb,
+	};
+
 	name: string;
 
 	builder: Builder;
@@ -49,8 +47,8 @@ export class BuildTarget {
 	virtualModules: Record<string, string> = {};
 	virtualModulesPlugin?: VirtualModulesPlugin;
 
-	/** Context used for building this target */
-	context: string;
+	/** Contexts used for building this target */
+	context: string[];
 
 	/** The unprocessed entry points for this target */
 	rawEntry: {[entryName: string]: string[]};
@@ -109,8 +107,17 @@ export class BuildTarget {
 			this.entry = this.rawEntry;
 		}
 
-		let configChain = contextToConfigCreatorMap[this.context](this);
+		// Create the base webpack config used for all builds
+		let configChain = new ChainConfig();
+		configChain = webpackConfigBase(configChain, this);
 
+		// Extend the config using the declared contexts
+		this.context.forEach((context) => {
+			configChain = BuildTarget.contextToConfigCreatorMap[context](configChain, this);
+		});
+
+		// Allow plugins to extend the generated config
+		// TODO: should plugins be able to extend the config by declaring their own contexts instead?
 		configChain = this.builder.hooks.prepareWebpackConfig.call(configChain, this);
 
 		if (configChain.has('externals')) throw new Error('Use BuildTarget.externals for externals to allow manipulating them from other plugins');

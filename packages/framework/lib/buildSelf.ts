@@ -6,7 +6,7 @@ export default <AedrisPlugin> {
 		builder.hooks.registerTargets.tapPromise('@aedris/framework/buildSelf', (b) => Promise.all([
 			b.createTarget({
 				name: '@aedris/framework:backend',
-				context: DefaultContext.BACKEND,
+				context: [DefaultContext.NODE],
 				entry: {
 					backend: path.resolve(b.config.rootDir, 'backend/index.ts'),
 				},
@@ -14,7 +14,7 @@ export default <AedrisPlugin> {
 			}),
 			b.createTarget({
 				name: '@aedris/framework:frontend-client',
-				context: DefaultContext.FRONTEND_SERVER,
+				context: [DefaultContext.WEB, DefaultContext.NODE],
 				entry: {
 					entryFrontendClient: path.resolve(b.config.rootDir, 'frontend/entryClient.ts'),
 				},
@@ -22,7 +22,7 @@ export default <AedrisPlugin> {
 			}),
 			b.createTarget({
 				name: '@aedris/framework:frontend-server',
-				context: DefaultContext.FRONTEND_SERVER,
+				context: [DefaultContext.WEB, DefaultContext.NODE],
 				entry: {
 					entryFrontendServer: path.resolve(b.config.rootDir, 'frontend/entryServer.ts'),
 				},

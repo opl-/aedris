@@ -1,7 +1,6 @@
 import FriendlyErrorsPlugin from 'friendly-errors-webpack-plugin';
 import path from 'path';
 import util from 'util';
-import ChainConfig from 'webpack-chain';
 import WebpackVirtualModules from 'webpack-virtual-modules';
 
 import {WebpackConfigCreator, DefaultContext} from '../BuildTarget';
@@ -11,10 +10,8 @@ import externalsGenerator from '../util/externals';
 // TODO: use file-loader, style-loader, css-loader
 // TODO: add aliases
 
-export default <WebpackConfigCreator> function createWebpackConfig(target) {
+export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
 	const {builder, config: aedrisConfig, externals} = target;
-
-	const config = new ChainConfig();
 
 	config.mode(builder.isDevelopment ? 'development' : 'production');
 
@@ -33,7 +30,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	config.output.publicPath('/_/res/');
 
 	// Generate source maps appropriate to the environment
-	config.devtool(builder.isDevelopment ? 'eval-source-map' : target.context === DefaultContext.FRONTEND_SERVER ? 'source-map' : 'hidden-source-map');
+	config.devtool(builder.isDevelopment ? 'eval-source-map' : target.context.includes(DefaultContext.WEB) ? 'hidden-source-map' : 'source-map');
 
 	// Consider TypeScript files while resolving files
 	config.resolve.extensions.merge(['.wasm', '.mjs', '.js', '.ts', '.json']);
@@ -60,7 +57,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	externals['any-promise'] = {'any-promise': 'Promise'};
 
 	// Don't include node dependencies in a node context
-	if (target.context !== DefaultContext.FRONTEND_CLIENT) {
+	if (target.context.includes(DefaultContext.NODE)) {
 		externals['node-externals'] = externalsGenerator({
 			// With the exception of files that need to be processed by webpack
 			whitelist: /^\.(css|less|s[ac]ss|styl)$/,

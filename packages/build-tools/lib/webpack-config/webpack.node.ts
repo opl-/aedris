@@ -1,9 +1,6 @@
 import {WebpackConfigCreator} from '../BuildTarget';
-import createBaseConfig from './webpack.base';
 
-export default <WebpackConfigCreator> function createWebpackConfig(target) {
-	const config = createBaseConfig(target);
-
+export default <WebpackConfigCreator> function createWebpackConfig(config) {
 	// The backend will be ran in a node context
 	config.target('node');
 	config.output.libraryTarget('commonjs2');

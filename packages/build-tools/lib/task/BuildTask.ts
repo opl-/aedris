@@ -86,7 +86,7 @@ export default class BuildTask extends Task {
 					await Promise.all([
 						b.createTarget({
 							name: '@aedris/build-tools:BuildTask/build-build-script',
-							context: DefaultContext.BACKEND,
+							context: [DefaultContext.NODE],
 							entry: {
 								build: './lib/build.ts',
 							},
@@ -131,7 +131,7 @@ export default class BuildTask extends Task {
 				localPluginBuilder.hooks.registerTargets.tap(HOOK_NAME, (lpb) => Promise.all(localPluginPaths.map(
 					(pluginPath) => lpb.createTarget({
 						name: `@aedris/build-tools:BuildTask:${pluginPath}`,
-						context: DefaultContext.BACKEND,
+						context: [DefaultContext.NODE],
 						entry: {
 							[path.basename(pluginPath, '.ts')]: path.resolve((b.rawConfig as AedrisPluginConfig).rootDir, pluginPath),
 						},
