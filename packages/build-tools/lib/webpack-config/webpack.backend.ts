@@ -9,7 +9,15 @@ export default <WebpackConfigCreator> function createWebpackConfig(target) {
 	config.output.libraryTarget('commonjs2');
 
 	// Don't polyfill node things in a node context
-	config.set('node', false);
+	// Normally `node` would be set to `false`, but due to a bug webpack-chain doesn't currently allow that. See https://github.com/neutrinojs/webpack-chain/issues/209
+	config.node.merge({
+		process: false,
+		global: false,
+		__filename: false,
+		__dirname: false,
+		Buffer: false,
+		setImmediate: false,
+	});
 
 	// TODO: possibly more config needed
 
