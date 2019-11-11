@@ -133,23 +133,29 @@ export class Builder {
 		this.registeredPlugins = {};
 		// eslint-disable-next-line no-restricted-syntax
 		for (const pluginName of this.rawConfig.plugins) {
-			const pluginPath = require.resolve(pluginName, {
-				paths: [
-					this.rawConfig.rootDir,
-				],
-			});
-
 			// eslint-disable-next-line no-await-in-loop
-			const aedrisPlugin: AedrisPlugin = (await import(pluginPath)).default;
-
-			this.registeredPlugins[pluginName] = {
-				absolutePath: pluginPath,
-				plugin: aedrisPlugin,
-			};
-
-			// Call hook only if it exists
-			if (aedrisPlugin && typeof aedrisPlugin.hookBuild === 'function') aedrisPlugin.hookBuild(this);
+			await this.usePlugin(pluginName);
 		}
+	}
+
+	async usePlugin(pluginName: string): Promise<void> {
+		if (!this.rawConfig) throw new Error('No config loaded while trying to use a plugin');
+
+		const pluginPath = require.resolve(pluginName, {
+			paths: [
+				this.rawConfig.rootDir,
+			],
+		});
+
+		const aedrisPlugin: AedrisPlugin = (await import(pluginPath)).default;
+
+		this.registeredPlugins[pluginName] = {
+			absolutePath: pluginPath,
+			plugin: aedrisPlugin,
+		};
+
+		// Call hook only if it exists
+		if (aedrisPlugin && typeof aedrisPlugin.hookBuild === 'function') aedrisPlugin.hookBuild(this);
 	}
 
 	async registerDynamicModules() {
