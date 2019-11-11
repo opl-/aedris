@@ -75,7 +75,6 @@ export class Builder {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
 
 		await this.loadRawConfig();
-		await this.hooks.afterRawConfig.promise(this);
 
 		await this.loadPlugins();
 
@@ -121,6 +120,8 @@ export class Builder {
 
 			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig);
 		}
+
+		await this.hooks.afterRawConfig.promise(this);
 
 		return this.rawConfig;
 	}
