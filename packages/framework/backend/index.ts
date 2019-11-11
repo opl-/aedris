@@ -20,3 +20,5 @@ app.use((ctx) => {
 
 // TODO: config
 app.listen(8080);
+
+module.exports = app;
