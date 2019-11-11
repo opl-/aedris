@@ -139,13 +139,22 @@ export class Builder {
 	}
 
 	async usePlugin(pluginName: string): Promise<void> {
+		log('Using plugin %s', pluginName);
+
 		if (!this.rawConfig) throw new Error('No config loaded while trying to use a plugin');
+
+		// Don't load plugins twice
+		if (this.registeredPlugins[pluginName]) return void log('  Already loaded (by name)');
 
 		const pluginPath = require.resolve(pluginName, {
 			paths: [
 				this.rawConfig.rootDir,
 			],
 		});
+
+		if (Object.values(this.registeredPlugins).some((info) => info.absolutePath === pluginPath)) return void log('  Already loaded (by path)');
+
+		log('  Loading from %s', pluginPath);
 
 		const aedrisPlugin: AedrisPlugin = (await import(pluginPath)).default;
 
