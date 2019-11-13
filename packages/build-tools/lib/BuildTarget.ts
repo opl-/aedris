@@ -2,18 +2,9 @@ import {Configuration, ExternalsElement} from 'webpack';
 import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
-import {Builder} from './Builder';
+import {Builder, WebpackConfigCreator} from './Builder';
 import entryTemplate from './entryTemplate';
 import webpackConfigBase from './webpack-config/webpack.base';
-import webpackConfigNode from './webpack-config/webpack.node';
-import webpackConfigWeb from './webpack-config/webpack.web';
-
-export enum DefaultContext {
-	NODE = 'node',
-	WEB = 'web',
-}
-
-export type WebpackConfigCreator = (config: ChainConfig, target: BuildTarget) => ChainConfig;
 
 export interface TargetOptions {
 	/** The name used to refer to this target. Must be unique for the Builder instance. */
@@ -34,11 +25,6 @@ export interface TargetOptions {
 }
 
 export class BuildTarget {
-	static contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
-		[DefaultContext.NODE]: webpackConfigNode,
-		[DefaultContext.WEB]: webpackConfigWeb,
-	};
-
 	name: string;
 
 	builder: Builder;
@@ -87,6 +73,10 @@ export class BuildTarget {
 		return this.builder.config;
 	}
 
+	getWebpackConfigCreatorForContext(context: string): WebpackConfigCreator {
+		return this.builder.contextToConfigCreatorMap[context];
+	}
+
 	createConfig(): void {
 		// Clear virtual modules for every new webpack config to ensure nothing breaks
 		this.virtualModules = {};
@@ -113,11 +103,14 @@ export class BuildTarget {
 
 		// Extend the config using the declared contexts
 		this.context.forEach((context) => {
-			configChain = BuildTarget.contextToConfigCreatorMap[context](configChain, this);
+			const configCreator = this.getWebpackConfigCreatorForContext(context);
+
+			if (!configCreator) throw new Error(`Context ${JSON.stringify(context)} does not exist for target ${JSON.stringify(this.name)}`);
+
+			configChain = configCreator(configChain, this);
 		});
 
 		// Allow plugins to extend the generated config
-		// TODO: should plugins be able to extend the config by declaring their own contexts instead?
 		configChain = this.builder.hooks.prepareWebpackConfig.call(configChain, this);
 
 		if (configChain.has('externals')) throw new Error('Use BuildTarget.externals for externals to allow manipulating them from other plugins');

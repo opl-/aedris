@@ -2,20 +2,29 @@ import debug from 'debug';
 import {promises as fs, Stats} from 'fs';
 import path from 'path';
 import {
-	AsyncParallelHook, SyncWaterfallHook, SyncBailHook, AsyncSeriesHook,
+	AsyncParallelHook, SyncHook, SyncWaterfallHook, SyncBailHook, AsyncSeriesHook,
 } from 'tapable';
 import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
-import ChainedConfig from 'webpack-chain';
+import ChainConfig from 'webpack-chain';
 
 import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
 import {BuildTarget, TargetOptions} from './BuildTarget';
+import webpackConfigNode from './webpack-config/webpack.node';
+import webpackConfigWeb from './webpack-config/webpack.web';
 
 const log = debug('aedris:build-tools');
 
 export interface AedrisPlugin {
 	hookBuild(builder: Builder): void | Promise<void>;
 }
+
+export enum DefaultContext {
+	NODE = 'node',
+	WEB = 'web',
+}
+
+export type WebpackConfigCreator = (config: ChainConfig, target: BuildTarget) => ChainConfig;
 
 interface BuilderOptions {
 	/** Path to the config file. */
@@ -31,6 +40,11 @@ interface PluginInfo {
 }
 
 export class Builder {
+	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
+		[DefaultContext.NODE]: webpackConfigNode,
+		[DefaultContext.WEB]: webpackConfigWeb,
+	};
+
 	/** `true` if not building for production */
 	isDevelopment: boolean = process.env.NODE_ENV !== 'production';
 
@@ -53,9 +67,10 @@ export class Builder {
 		afterRawConfig: new AsyncSeriesHook<Builder>(['builder']),
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
 		afterConfig: new AsyncSeriesHook<Builder>(['builder']),
+		registerContexts: new SyncHook<Builder>(['builder']),
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
 		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
-		prepareWebpackConfig: new SyncWaterfallHook<ChainedConfig, BuildTarget>(['webpackConfig', 'target']),
+		prepareWebpackConfig: new SyncWaterfallHook<ChainConfig, BuildTarget>(['webpackConfig', 'target']),
 		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 	};
@@ -83,6 +98,8 @@ export class Builder {
 
 		this.config = this.hooks.normalizeConfig.call(this.rawConfig);
 		await this.hooks.afterConfig.promise(this);
+
+		this.hooks.registerContexts.call(this);
 
 		await this.registerDynamicModules();
 
@@ -247,6 +264,12 @@ export class Builder {
 		this.targets.push(target);
 
 		return target;
+	}
+
+	registerContext(contextName: string, configCreator: WebpackConfigCreator) {
+		log('Registering context %s', JSON.stringify(contextName));
+
+		this.contextToConfigCreatorMap[contextName] = configCreator;
 	}
 
 	async clearOutputs(): Promise<void> {

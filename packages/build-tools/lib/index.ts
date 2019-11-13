@@ -1,5 +1,5 @@
-import {AedrisPlugin, Builder} from './Builder';
-import {BuildTarget, DefaultContext} from './BuildTarget';
+import {AedrisPlugin, Builder, DefaultContext} from './Builder';
+import {BuildTarget} from './BuildTarget';
 
 export {
 	AedrisPlugin,

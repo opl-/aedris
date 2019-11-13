@@ -3,7 +3,7 @@ import path from 'path';
 import util from 'util';
 import WebpackVirtualModules from 'webpack-virtual-modules';
 
-import {WebpackConfigCreator, DefaultContext} from '../BuildTarget';
+import {WebpackConfigCreator, DefaultContext} from '../Builder';
 import externalsGenerator from '../util/externals';
 
 // TODO: clean output directories

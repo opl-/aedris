@@ -1,4 +1,4 @@
-import {WebpackConfigCreator} from '../BuildTarget';
+import {WebpackConfigCreator} from '../Builder';
 
 export default <WebpackConfigCreator> function createWebpackConfig(config) {
 	// The backend will be ran in a node context

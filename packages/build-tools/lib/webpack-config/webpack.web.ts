@@ -1,4 +1,4 @@
-import {WebpackConfigCreator} from '../BuildTarget';
+import {WebpackConfigCreator} from '../Builder';
 import {DefaultContext} from '..';
 
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {

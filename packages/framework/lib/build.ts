@@ -23,7 +23,7 @@ export default <AedrisPlugin> {
 					}),
 					b.createTarget({
 						name: '@aedris/framework/plugin-frontend-bundle',
-						context: [DefaultContext.WEB, DefaultContext.NODE],
+						context: [DefaultContext.WEB, 'vue', DefaultContext.NODE],
 						entry: {
 							frontend: path.resolve(b.config.backendDir, 'index.ts'),
 						},
@@ -45,7 +45,7 @@ export default <AedrisPlugin> {
 				}),
 				b.createTarget({
 					name: '@aedris/framework:app-frontend-client-bundle',
-					context: [DefaultContext.WEB],
+					context: [DefaultContext.WEB, 'vue'],
 					entry: {
 						app: '@aedris/framework/dist/entryFrontendClient',
 					},
@@ -53,7 +53,7 @@ export default <AedrisPlugin> {
 				}),
 				b.createTarget({
 					name: '@aedris/framework:app-frontend-server-bundle',
-					context: [DefaultContext.WEB, DefaultContext.NODE],
+					context: [DefaultContext.WEB, 'vue', DefaultContext.NODE],
 					entry: {
 						frontend: '@aedris/framework/dist/entryFrontendServer',
 					},

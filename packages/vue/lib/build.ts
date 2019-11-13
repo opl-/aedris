@@ -7,8 +7,8 @@ const HOOK_NAME = '@aedris/vue';
 
 export default <AedrisPlugin> {
 	hookBuild(builder) {
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
-			if (target.context.includes(DefaultContext.WEB)) {
+		builder.hooks.registerContexts.tap(HOOK_NAME, (b) => {
+			b.registerContext('vue', (config, target) => {
 				// Try matching the `.vue` extension
 				config.resolve.extensions.add('.vue');
 
@@ -33,9 +33,9 @@ export default <AedrisPlugin> {
 						appendTsSuffixTo: [/\.vue$/],
 					},
 				});
-			}
 
-			return config;
+				return config;
+			});
 		});
 	},
 };
