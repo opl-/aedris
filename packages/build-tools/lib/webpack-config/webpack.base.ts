@@ -30,7 +30,8 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	config.output.publicPath('/_/res/');
 
 	// Generate source maps appropriate to the environment
-	config.devtool(builder.isDevelopment ? 'eval-source-map' : target.context.includes(DefaultContext.WEB) ? 'hidden-source-map' : 'source-map');
+	// Eval source maps break dynamic module support - use with caution
+	config.devtool(builder.isDevelopment ? 'inline-source-map' : target.context.includes(DefaultContext.WEB) ? 'hidden-source-map' : 'source-map');
 
 	// Consider TypeScript files while resolving files
 	config.resolve.extensions.merge(['.wasm', '.mjs', '.js', '.ts', '.json']);
