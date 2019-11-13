@@ -7,9 +7,7 @@ const HOOK_NAME = '@aedris/framework';
 
 export default <AedrisPlugin> {
 	hookBuild(builder: Builder): void {
-		builder.hooks.afterRawConfig.tapPromise(HOOK_NAME, async (b) => {
-			await b.usePlugin('@aedris/vue');
-		});
+		builder.usePlugin('@aedris/vue');
 
 		builder.hooks.registerTargets.tapPromise(HOOK_NAME, (b) => {
 			if (builder.config.isPlugin) {
