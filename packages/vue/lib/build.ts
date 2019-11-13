@@ -8,16 +8,6 @@ const HOOK_NAME = '@aedris/vue';
 export default <AedrisPlugin> {
 	hookBuild(builder) {
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
-			// Override the build-tools externals function to exclude our own entry bundles. Kinda hacky but gets the job done.
-			const originalExternals = target.externals['node-externals'];
-			if (originalExternals) {
-				// eslint-disable-next-line no-param-reassign
-				target.externals['node-externals'] = (context: string, request: string, callback: (err?: Error, result?: string) => void) => {
-					if (/@aedris\/framework\/dist\/(?:backend|entryFrontend(?:Client|Server))/.test(request)) return callback(undefined, undefined);
-					return (originalExternals as Function)(context, request, callback);
-				};
-			}
-
 			if (target.context.includes(DefaultContext.WEB)) {
 				// Try matching the `.vue` extension
 				config.resolve.extensions.add('.vue');

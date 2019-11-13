@@ -66,5 +66,19 @@ export default <AedrisPlugin> {
 			// TODO: config
 			b.setDynamicModule(`${HOOK_NAME}:router`, path.resolve(b.config.frontendDir, 'router/'));
 		});
+
+		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
+			// Override the build-tools externals function to never externalize our own entry bundles for dynamic module resolution. Kinda hacky but gets the job done.
+			const originalExternals = target.externals['node-externals'];
+			if (originalExternals) {
+				// eslint-disable-next-line no-param-reassign
+				target.externals['node-externals'] = (context: string, request: string, callback: (err?: Error, result?: string) => void) => {
+					if (/@aedris\/framework\/dist\/(?:backend|entryFrontend(?:Client|Server))/.test(request)) return callback(undefined, undefined);
+					return (originalExternals as Function)(context, request, callback);
+				};
+			}
+
+			return config;
+		});
 	},
 };
