@@ -272,7 +272,7 @@ export class Builder {
 		this.contextToConfigCreatorMap[contextName] = configCreator;
 	}
 
-	async clearOutputs(): Promise<void> {
+	async cleanOutputs(): Promise<void> {
 		// Remove the output directory specified in the config
 		const outputDirectories = ([this.config.outputDir] as (string | undefined)[])
 			// Add output directories from all targets, as those might be outside of the output dir from config
@@ -290,13 +290,13 @@ export class Builder {
 	}
 
 	async build(): Promise<void> {
-		await this.clearOutputs();
+		await this.cleanOutputs();
 
 		await promisify(this.webpackCompiler.run.bind(this.webpackCompiler))();
 	}
 
 	async watch(): Promise<void> {
-		await this.clearOutputs();
+		await this.cleanOutputs();
 
 		this.webpackWatcher = this.webpackCompiler.watch({
 			aggregateTimeout: 500,
