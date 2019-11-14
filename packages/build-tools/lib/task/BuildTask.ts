@@ -39,9 +39,9 @@ export default class BuildTask extends Task {
 			configPath,
 		});
 
-		this.addStandardTargets();
+		BuildTask.addStandardTargets(this.builder);
 
-		this.addLocalPluginSupport({configPath});
+		BuildTask.addLocalPluginSupport(this.builder, {configPath});
 
 		await this.builder.load();
 
@@ -75,9 +75,9 @@ export default class BuildTask extends Task {
 		}
 	}
 
-	addStandardTargets() {
+	static addStandardTargets(builder: Builder) {
 		// Register standard targets that are part of the Aedris structure
-		this.builder.hooks.registerTargets.tapPromise(HOOK_NAME, async (b) => {
+		builder.hooks.registerTargets.tapPromise(HOOK_NAME, async (b) => {
 			if (b.config.isPlugin) {
 				// Add a target for build scripts used by plugins to hook into the build automatically if one exists
 				try {
@@ -100,9 +100,9 @@ export default class BuildTask extends Task {
 		});
 	}
 
-	addLocalPluginSupport({configPath}: {configPath: string}) {
+	static addLocalPluginSupport(builder: Builder, {configPath}: {configPath: string}) {
 		// Compile local plugins written in TypeScript
-		this.builder.hooks.afterRawConfig.tapPromise(HOOK_NAME, async (b) => {
+		builder.hooks.afterRawConfig.tapPromise(HOOK_NAME, async (b) => {
 			if (!b.rawConfig?.plugins) return;
 
 			const localPluginPaths: string[] = [];
