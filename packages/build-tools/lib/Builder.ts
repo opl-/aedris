@@ -10,6 +10,7 @@ import ChainConfig from 'webpack-chain';
 
 import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
 import {BuildTarget, TargetOptions} from './BuildTarget';
+import PluginManager from './PluginManager';
 import webpackConfigNode from './webpack-config/webpack.node';
 import webpackConfigWeb from './webpack-config/webpack.web';
 
@@ -34,12 +35,7 @@ interface BuilderOptions {
 	config?: AedrisPluginConfig;
 }
 
-interface PluginInfo {
-	absolutePath: string;
-	plugin: AedrisPlugin;
-}
-
-export class Builder {
+export class Builder extends PluginManager<AedrisPlugin> {
 	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
 		[DefaultContext.NODE]: webpackConfigNode,
 		[DefaultContext.WEB]: webpackConfigWeb,
@@ -51,9 +47,6 @@ export class Builder {
 	configPath?: string;
 	rawConfig?: AedrisPluginConfig;
 	config: AedrisPluginConfig;
-
-	pluginQueue: string[] = [];
-	registeredPlugins: {[pluginName: string]: PluginInfo};
 
 	/** List of paths to modules that can have a varying path in the project. */
 	dynamicAppModules: {[moduleName: string]: string} = {};
@@ -76,6 +69,8 @@ export class Builder {
 	};
 
 	constructor(opts: BuilderOptions) {
+		super();
+
 		if (opts.config) {
 			this.rawConfig = opts.config;
 
@@ -92,7 +87,7 @@ export class Builder {
 
 		await this.loadRawConfig();
 
-		await this.loadPlugins();
+		await this.loadPluginsFromRawConfig();
 
 		log('Passing config to plugins');
 
@@ -144,90 +139,21 @@ export class Builder {
 		return this.rawConfig;
 	}
 
-	async loadPlugins(): Promise<void> {
-		if (!this.rawConfig) throw new Error('No config loaded while trying to load plugins');
+	async loadPluginsFromRawConfig() {
+		log('Loading plugins from config');
 
-		log('Registering %i plugins', this.rawConfig.plugins.length);
+		if (!this.rawConfig) throw new Error('No config loaded while trying to load plugins from config');
+		if (!this.rawConfig.plugins) return;
 
-		this.registeredPlugins = {};
-
-		// Load plugins requested in the config
-		// eslint-disable-next-line no-restricted-syntax
-		for (const pluginRef of this.rawConfig.plugins) {
-			// eslint-disable-next-line no-await-in-loop
-			await this.loadPlugin(pluginRef);
-		}
-
-		// Keep loading plugins until all dependencies are loaded
-		while (this.pluginQueue.length > 0) {
-			const pluginRef = this.pluginQueue.shift() as string;
-			// eslint-disable-next-line no-await-in-loop
-			await this.loadPlugin(pluginRef);
-		}
-	}
-
-	/**
-	 * Adds the plugin to the list of plugins to be used by this Builder, ensuring it only gets applied once.
-	 *
-	 * Should only be called from the hookBuild function.
-	 *
-	 * @param pluginRef Name or path of plugin to load
-	 */
-	usePlugin(pluginRef: string): void {
-		log('Adding plugin %s to load queue', pluginRef);
-
-		this.pluginQueue.push(pluginRef);
-	}
-
-	/**
-	 * Loads a plugin by name and applies it, ensuring that it doesn't get applied more than once.
-	 *
-	 * @param pluginRef Name or path relative to project root of the plugin
-	 */
-	async loadPlugin(pluginRef: string): Promise<void> {
-		log('Applying plugin %s', pluginRef);
-
-		if (!this.rawConfig) throw new Error('No config loaded while trying to use a plugin');
-
-		const isLocalPluginRef = /^[./]/.test(pluginRef);
-
-		const pluginPath = require.resolve(pluginRef, {
-			paths: [
+		await this.loadPlugins(this.rawConfig.plugins, {
+			resolvePaths: [
 				// Try to resolve plugins from the project directory
 				this.rawConfig.rootDir,
-				// And from the directories of all the plugins, as those can request plugins to be loaded too, but only if they use a package name
-				...(isLocalPluginRef ? [] : Object.values(this.registeredPlugins).map((info) => info.absolutePath)),
 			],
-		});
-
-		// Resolve local plugin paths to their absolute paths
-		const pluginName = isLocalPluginRef ? pluginPath : pluginRef;
-
-		// Don't load plugins twice
-		if (this.registeredPlugins[pluginName]) return void log(`  Already loaded (by name: ${JSON.stringify(pluginName)})`);
-		if (Object.values(this.registeredPlugins).some((info) => info.absolutePath === pluginPath)) return void log(`  Already loaded (by path: ${JSON.stringify(pluginPath)})`);
-
-		log('  Loading from %s', pluginPath);
-
-		const aedrisPlugin: AedrisPlugin = (await import(pluginPath)).default;
-
-		await this.applyPlugin(pluginName, {
-			absolutePath: pluginPath,
-			plugin: aedrisPlugin,
 		});
 	}
 
-	/**
-	 * Registers the plugin in the Builder and calls the hookBuild function if possible. This method bypasses all duplicate checks.
-	 *
-	 * @param pluginName Name of the plugin
-	 * @param pluginInfo Object containing information about the plugin
-	 */
-	async applyPlugin(pluginName: string, pluginInfo: PluginInfo) {
-		this.registeredPlugins[pluginName] = pluginInfo;
-
-		const {plugin} = pluginInfo;
-
+	async doApplyPlugin(plugin: AedrisPlugin) {
 		// Call hook only if it exists
 		if (plugin && typeof plugin.hookBuild === 'function') await plugin.hookBuild(this);
 	}
