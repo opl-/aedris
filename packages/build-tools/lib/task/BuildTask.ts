@@ -28,6 +28,7 @@ export default class BuildTask extends Task {
 			},
 			watch: {
 				type: 'boolean' as 'boolean',
+				alias: ['w'],
 			},
 		},
 	};
