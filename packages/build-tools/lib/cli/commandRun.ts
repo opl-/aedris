@@ -3,11 +3,13 @@ import path from 'path';
 import {Argv} from 'yargs';
 
 import BuildTask from '../task/BuildTask';
+import CleanTask from '../task/CleanTask';
 import {TaskLike} from '../task/Task';
 
 // TODO: load tasks from plugins
 const TASKS: Record<string, TaskLike> = {
 	build: BuildTask,
+	clean: CleanTask,
 };
 
 export default function createCommand(yargs: Argv): Argv {
