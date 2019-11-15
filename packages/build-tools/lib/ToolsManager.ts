@@ -1,12 +1,12 @@
 import debug from 'debug';
-import {AsyncSeriesHook, SyncWaterfallHook} from 'tapable';
+import {AsyncSeriesHook, SyncWaterfallHook, SyncHook} from 'tapable';
 
 import {AedrisConfigHandler, AedrisConfigHandlerOptions, AedrisPluginConfig} from './AedrisConfigHandler';
 import AedrisPlugin from './AedrisPlugin';
 import PluginManager from './PluginManager';
 import BuildTask from './task/BuildTask';
 import CleanTask from './task/CleanTask';
-import {TaskLike} from './task/Task';
+import Task, {TaskLike} from './task/Task';
 
 const log = debug('aedris:build-tools:ToolsManager');
 
@@ -18,6 +18,7 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
 		afterConfig: new AsyncSeriesHook<ToolsManager>(['toolsManager']),
 		registerTasks: new AsyncSeriesHook<ToolsManager>(['toolsManager']),
+		taskCreated: new SyncHook<Task, string>(['task', 'taskName']),
 	};
 
 	tasks: Record<string, TaskLike> = {
@@ -79,5 +80,17 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 		log('Registering task %s', JSON.stringify(taskName));
 
 		this.tasks[taskName] = taskConstructor;
+	}
+
+	createTask(taskName: string) {
+		const TaskConstructor = this.tasks[taskName];
+
+		if (!TaskConstructor) throw new Error(`Tried to create invalid task named ${JSON.stringify(taskName)}`);
+
+		const task = new TaskConstructor();
+
+		this.hooks.taskCreated.call(task, taskName);
+
+		return task;
 	}
 }
