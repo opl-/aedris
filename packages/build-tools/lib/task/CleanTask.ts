@@ -16,7 +16,7 @@ export default class CleanTask extends Task {
 		});
 
 		// Needs local plugins to determine any output dirs created by targets outside the config.outputDir
-		BuildTask.addLocalPluginSupport(this.builder, {configPath});
+		BuildTask.addLocalPluginSupport(this.builder);
 
 		await this.builder.load();
 

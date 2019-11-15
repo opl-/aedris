@@ -1,4 +1,8 @@
+import debug from 'debug';
+
 import path from 'path';
+
+const log = debug('aedris:build-tools:AedrisConfigHandler');
 
 export interface AedrisPluginConfig {
 	/** `true` if this config has been normalized. */
@@ -27,29 +31,69 @@ export interface AedrisAppConfig extends AedrisPluginConfig {
 	publicPath: string;
 }
 
+export interface AedrisConfigHandlerOptions {
+	/** Path to the config file. */
+	configPath?: string;
+
+	/** Config object to be used instead of the config file from disk. Takes precedence over the `configPath` option. */
+	config?: AedrisPluginConfig;
+}
+
 export function isAppConfig(config: {[prop: string]: any}): config is AedrisAppConfig {
 	return !config.isPlugin;
 }
 
 export class AedrisConfigHandler {
-	static async loadConfig(configPath: string): Promise<AedrisPluginConfig | false> {
-		try {
-			// eslint-disable-next-line global-require, import/no-dynamic-require
-			const configData = require(configPath);
+	/** Path to the config file. `undefined` if using a passed in config object. */
+	configPath?: string;
 
-			// TODO: actually verify the config
+	/** Currently loaded, in case of file configs normalized, config. Overriden when config is reloaded if `configPath` is set. */
+	userConfig?: AedrisPluginConfig;
 
-			return AedrisConfigHandler.normalizeConfig(path.dirname(configPath), configData);
-		} catch (ex) {
-			if (ex.code === 'ENOENT') {
-				return false;
-			}
+	/** Normalized config object. Overriden when config is reloaded. */
+	config: AedrisPluginConfig;
 
-			throw ex;
+	constructor(opts: AedrisConfigHandlerOptions) {
+		if (opts.config) {
+			this.userConfig = opts.config;
+
+			if (!this.userConfig.rootDir) throw new Error('No rootDir provided in the config object');
+		} else if (opts.configPath) {
+			this.configPath = opts.configPath;
+		} else {
+			throw new Error('Config path or object has to be provided');
 		}
 	}
 
-	// TODO: this method should take in an object type and return the config type
+	/**
+	 * Normalizes the config, loading it from disk if a config path was provided or using the passed in config object.
+	 */
+	async loadConfig(): Promise<void> {
+		if (this.configPath) {
+			log('Loading config from %s', this.configPath);
+
+			try {
+				// eslint-disable-next-line global-require, import/no-dynamic-require
+				this.userConfig = require(this.configPath);
+			} catch (ex) {
+				if (ex.code === 'ENOENT') throw new Error('Config at given path could not be found');
+
+				throw ex;
+			}
+
+			// Vaguely check if what we received is an object
+			if (!(this.userConfig instanceof Object) || Array.isArray(this.userConfig)) throw new Error('Config at given path is not an object');
+
+			this.config = AedrisConfigHandler.normalizeConfig(path.dirname(this.configPath), this.userConfig);
+		} else if (!this.userConfig) {
+			throw new Error('No path to config and no config object provided');
+		} else {
+			log('Using provided config object');
+
+			this.config = AedrisConfigHandler.normalizeConfig(this.userConfig.rootDir, this.userConfig);
+		}
+	}
+
 	/**
 	 * Normalizes the passed config, resolving relative paths. Returned object is a clone of the original.
 	 *

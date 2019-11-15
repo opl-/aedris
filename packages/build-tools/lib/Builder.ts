@@ -8,7 +8,7 @@ import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
 import ChainConfig from 'webpack-chain';
 
-import {AedrisConfigHandler, AedrisPluginConfig} from './AedrisConfigHandler';
+import {AedrisConfigHandler, AedrisConfigHandlerOptions, AedrisPluginConfig} from './AedrisConfigHandler';
 import AedrisPlugin from './AedrisPlugin';
 import {BuildTarget, TargetOptions} from './BuildTarget';
 import PluginManager from './PluginManager';
@@ -24,13 +24,7 @@ export enum DefaultContext {
 
 export type WebpackConfigCreator = (config: ChainConfig, target: BuildTarget) => ChainConfig;
 
-interface BuilderOptions {
-	/** Path to the config file. */
-	configPath?: string;
-
-	/** Config object to be used instead of the config file. Takes precedence over the `configPath` option. */
-	config?: AedrisPluginConfig;
-}
+interface BuilderOptions extends AedrisConfigHandlerOptions {}
 
 export class Builder extends PluginManager<AedrisPlugin> {
 	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
@@ -41,9 +35,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	/** `true` if not building for production */
 	isDevelopment: boolean = process.env.NODE_ENV !== 'production';
 
-	configPath?: string;
-	rawConfig?: AedrisPluginConfig;
-	config: AedrisPluginConfig;
+	configHandler: AedrisConfigHandler;
 
 	/** List of paths to modules that can have a varying path in the project. */
 	dynamicAppModules: {[moduleName: string]: string} = {};
@@ -68,27 +60,25 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	constructor(opts: BuilderOptions) {
 		super();
 
-		if (opts.config) {
-			this.rawConfig = opts.config;
-
-			if (!this.rawConfig.rootDir) throw new Error('No rootDir provided in the config');
-		} else if (opts.configPath) {
-			this.configPath = opts.configPath;
-		} else {
-			throw new Error('Config path or object has to be provided');
-		}
+		this.configHandler = new AedrisConfigHandler(opts);
 	}
+
+	get config() {
+		return this.configHandler.config;
+		}
 
 	async load(): Promise<Builder> {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
 
-		await this.loadRawConfig();
+		await this.loadConfig();
 
-		await this.loadPluginsFromRawConfig();
+		await this.loadPluginsFromConfig();
 
 		log('Passing config to plugins');
 
-		this.config = this.hooks.normalizeConfig.call(this.rawConfig);
+		this.configHandler.config = this.hooks.normalizeConfig.call(this.config);
+
+		// The config is now fully normalized for plugins to use
 		await this.hooks.afterConfig.promise(this);
 
 		this.hooks.registerContexts.call(this);
@@ -115,37 +105,21 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		return this;
 	}
 
-	async loadRawConfig(): Promise<AedrisPluginConfig> {
-		if (this.configPath) {
-			log('Loading Builder using config %s', this.configPath);
-
-			const tempConfig = await AedrisConfigHandler.loadConfig(this.configPath);
-			if (tempConfig === false) throw new Error('Config could not be found');
-
-			this.rawConfig = tempConfig;
-		} else if (!this.rawConfig) {
-			throw new Error('No path to config and no config object provided');
-		} else {
-			log('Using provided config');
-
-			this.rawConfig = AedrisConfigHandler.normalizeConfig(this.rawConfig.rootDir, this.rawConfig);
-		}
+	async loadConfig(): Promise<void> {
+		await this.configHandler.loadConfig();
 
 		await this.hooks.afterRawConfig.promise(this);
-
-		return this.rawConfig;
 	}
 
-	async loadPluginsFromRawConfig() {
+	async loadPluginsFromConfig() {
 		log('Loading plugins from config');
 
-		if (!this.rawConfig) throw new Error('No config loaded while trying to load plugins from config');
-		if (!this.rawConfig.plugins) return;
+		if (!this.config) throw new Error('No config loaded while trying to load plugins from config');
 
-		await this.loadPlugins(this.rawConfig.plugins, {
+		await this.loadPlugins(this.config.plugins, {
 			resolvePaths: [
 				// Try to resolve plugins from the project directory
-				this.rawConfig.rootDir,
+				this.config.rootDir,
 			],
 		});
 	}
