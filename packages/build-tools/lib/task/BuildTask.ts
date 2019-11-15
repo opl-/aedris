@@ -1,6 +1,7 @@
 import debug from 'debug';
 import {constants as fsConstants, promises as fs} from 'fs';
 import path from 'path';
+import {AsyncSeriesHook} from 'tapable';
 import {inspect, InspectOptions} from 'util';
 import yargs from 'yargs';
 
@@ -32,6 +33,13 @@ export default class BuildTask extends Task {
 		},
 	};
 
+	hooks = {
+		builderCreated: new AsyncSeriesHook<Builder, BuildTask>(['builder', 'buildTask']),
+		beforeWatch: new AsyncSeriesHook<BuildTask>(['buildTask']),
+		beforeBuild: new AsyncSeriesHook<BuildTask>(['buildTask']),
+		afterBuild: new AsyncSeriesHook<BuildTask>(['buildTask']),
+	};
+
 	builder: Builder;
 
 	async run({configPath, argv}: InferredRunOptions<typeof BuildTask>): Promise<void> {
@@ -42,6 +50,8 @@ export default class BuildTask extends Task {
 		BuildTask.addStandardTargets(this.builder);
 
 		BuildTask.addLocalPluginSupport(this.builder);
+
+		await this.hooks.builderCreated.promise(this.builder, this);
 
 		await this.builder.load();
 
@@ -69,9 +79,15 @@ export default class BuildTask extends Task {
 		}
 
 		if (argv.watch) {
+			await this.hooks.beforeWatch.promise(this);
+
 			await this.builder.watch();
 		} else {
+			await this.hooks.beforeBuild.promise(this);
+
 			await this.builder.build();
+
+			await this.hooks.afterBuild.promise(this);
 		}
 	}
 
