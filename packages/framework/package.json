@@ -19,7 +19,7 @@
   },
   "scripts": {
     "lint": "eslint --ext .js,.ts lib/ frontend/ backend/",
-    "build": "aedris run build",
+    "build": "aedris build",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {

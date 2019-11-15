@@ -1,23 +1,80 @@
 #!/usr/bin/env node
 
+// Use source-map-support to improve error logging for any build tools errors
 import 'source-map-support/register';
+
+import findUp from 'find-up';
+import path from 'path';
 import yargs, {Argv} from 'yargs';
 
-import commandRun from './cli/commandRun';
+import ToolsManager from './ToolsManager';
+import buildLocalPlugins from './util/buildLocalPlugins';
 
-let args = yargs
-	.env('AEDRIS')
-	.usage('$0 <command> [options]')
-	.help('help').alias('help', 'h')
-	.wrap(yargs.terminalWidth())
-	.demandCommand();
+const HOOK_NAME = '@aedris/build-tools:cli';
 
-function apply(cmd: (args: Argv) => Argv): void {
-	args = cmd(args);
+function registerProjectPathOptions(y: Argv) {
+	return y.option('config', {
+		description: "Name of the project's configuration file",
+		alias: 'c',
+		type: 'string',
+		default: 'aedris.config.js',
+	}).option('projectDir', {
+		description: "Path to any of the project's directories",
+		alias: 'p',
+		type: 'string',
+		default: '.',
+	});
 }
 
-[
-	commandRun,
-].forEach(apply);
+(async () => {
+	// Parse the arguments once beforehand to figure out the config location. See https://github.com/yargs/yargs/issues/1042 and https://github.com/yargs/yargs/issues/1420
+	const preparsedOpts = registerProjectPathOptions(yargs(process.argv.slice(2)))
+		.help(false)
+		.argv;
 
-args.parse();
+	const configPath = await findUp(preparsedOpts.config, {
+		cwd: path.resolve(process.cwd(), preparsedOpts.projectDir),
+	});
+
+	if (!configPath) return void console.error('Aedris config has not been found. Are you in the correct directory?');
+
+	// Initialize the ToolsManager
+	const toolsManager = new ToolsManager({
+		configPath,
+	});
+
+	toolsManager.hooks.afterRawConfig.tapPromise(HOOK_NAME, async () => {
+		await buildLocalPlugins(toolsManager.config);
+	});
+
+	await toolsManager.load();
+
+	// Construct the actual argument parser
+	let argv = registerProjectPathOptions(yargs(process.argv.slice(2)))
+		.env('AEDRIS')
+		.usage('$0 <command> [options]')
+		.help('help')
+		.alias('help', 'h')
+		.wrap(yargs.terminalWidth())
+		.demandCommand();
+
+	Object.entries(toolsManager.tasks).forEach(([taskName, TaskConstructor]) => {
+		let aliases = TaskConstructor.command.aliases || [];
+		if (!Array.isArray(aliases)) aliases = [aliases as string];
+
+		argv = argv.command({
+			...TaskConstructor.command,
+			aliases: [...aliases, taskName],
+			async handler(taskArgv) {
+				console.log(`== Running task ${taskName}`);
+
+				await new TaskConstructor().run({
+					argv: taskArgv,
+					configPath,
+				});
+			},
+		});
+	});
+
+	argv.parse();
+})();
