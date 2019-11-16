@@ -68,10 +68,10 @@ function registerProjectPathOptions(y: Argv) {
 			async handler(taskArgv) {
 				console.log(`== Running task ${taskName}`);
 
-				await toolsManager.createTask(taskName).run({
+				await toolsManager.createTask(taskName, {
 					argv: taskArgv,
 					configPath,
-				});
+				}).run();
 			},
 		});
 	});

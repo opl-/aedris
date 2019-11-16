@@ -6,7 +6,7 @@ import AedrisPlugin from './AedrisPlugin';
 import PluginManager from './PluginManager';
 import BuildTask from './task/BuildTask';
 import CleanTask from './task/CleanTask';
-import Task, {TaskLike} from './task/Task';
+import Task, {Constructor, InferredTaskOptions, TaskLike} from './task/Task';
 
 const log = debug('aedris:build-tools:ToolsManager');
 
@@ -82,15 +82,21 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 		this.tasks[taskName] = taskConstructor;
 	}
 
-	createTask(taskName: string) {
+	/* FIXME: taskOptions can't be made to use types based on a specific task using the generic but i'm absolutely sick of fucking with typescript so i'm leaving it broken.
+	it compiles so who the fuck cares. wasted 10 fucking hours on this shit. */
+	createTask<
+		T extends typeof Task = typeof Task,
+		C extends Constructor<T> = Constructor<T>,
+		I extends InstanceType<C> = InstanceType<C>,
+	>(taskName: string, taskOptions: InferredTaskOptions<T>): I {
 		const TaskConstructor = this.tasks[taskName];
 
 		if (!TaskConstructor) throw new Error(`Tried to create invalid task named ${JSON.stringify(taskName)}`);
 
-		const task = new TaskConstructor();
+		const task = new TaskConstructor(taskOptions);
 
 		this.hooks.taskCreated.call(task, taskName);
 
-		return task;
+		return task as I;
 	}
 }

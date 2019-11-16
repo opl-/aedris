@@ -2,9 +2,9 @@ import {AsyncSeriesHook} from 'tapable';
 
 import {Builder} from '..';
 import BuildTask from './BuildTask';
-import Task, {InferredRunOptions} from './Task';
+import Task from './Task';
 
-export default class CleanTask extends Task {
+export default class CleanTask extends Task<typeof CleanTask> {
 	static command = {
 		command: 'clean',
 		describe: 'Clean an Aedris project',
@@ -18,9 +18,9 @@ export default class CleanTask extends Task {
 
 	builder: Builder;
 
-	async run({configPath}: InferredRunOptions<typeof CleanTask>): Promise<void> {
+	async run(): Promise<void> {
 		this.builder = new Builder({
-			configPath,
+			configPath: this.configPath,
 		});
 
 		// Needs local plugins to determine any output dirs created by targets outside the config.outputDir

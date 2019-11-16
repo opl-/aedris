@@ -6,14 +6,14 @@ import {inspect, InspectOptions} from 'util';
 import yargs from 'yargs';
 
 import {Builder, DefaultContext} from '..';
-import Task, {InferredRunOptions} from './Task';
+import Task from './Task';
 import buildLocalPlugins from '../util/buildLocalPlugins';
 
 const HOOK_NAME = '@aedris/build-tools:BuildTask';
 
 const log = debug('aedris:build-tools:BuildTask');
 
-export default class BuildTask extends Task {
+export default class BuildTask extends Task<typeof BuildTask> {
 	static command = {
 		command: 'build',
 		describe: 'Build an Aedris project',
@@ -42,9 +42,9 @@ export default class BuildTask extends Task {
 
 	builder: Builder;
 
-	async run({configPath, argv}: InferredRunOptions<typeof BuildTask>): Promise<void> {
+	async run(): Promise<void> {
 		this.builder = new Builder({
-			configPath,
+			configPath: this.configPath,
 		});
 
 		BuildTask.addStandardTargets(this.builder);
@@ -55,7 +55,7 @@ export default class BuildTask extends Task {
 
 		await this.builder.load();
 
-		if (argv.printConfig || argv.printWebpack) {
+		if (this.argv.printConfig || this.argv.printWebpack) {
 			const inspectOptions: InspectOptions = {
 				breakLength: Math.min(200, yargs.terminalWidth()),
 				colors: true,
@@ -63,9 +63,9 @@ export default class BuildTask extends Task {
 				maxArrayLength: Infinity,
 			};
 
-			if (argv.printConfig) console.log(`\n== Aedris config:\n${inspect(this.builder.config, inspectOptions)}`);
+			if (this.argv.printConfig) console.log(`\n== Aedris config:\n${inspect(this.builder.config, inspectOptions)}`);
 
-			if (argv.printWebpack) {
+			if (this.argv.printWebpack) {
 				if (this.builder.targets.length === 0) {
 					console.log('== No targets (and therefore Webpack configs) found. Are you missing a base plugin?');
 				} else {
@@ -78,7 +78,7 @@ export default class BuildTask extends Task {
 			return;
 		}
 
-		if (argv.watch) {
+		if (this.argv.watch) {
 			await this.hooks.beforeWatch.promise(this);
 
 			await this.builder.watch();
