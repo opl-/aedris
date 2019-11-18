@@ -57,11 +57,23 @@ module.exports = {
 		'no-useless-constructor': 'off',
 		'@typescript-eslint/no-useless-constructor': 'error',
 
-		// TODO: enable when published (v2.1.0?) https://github.com/typescript-eslint/typescript-eslint/pull/762
-		/* 'quotes': 'off',
+		'quotes': 'off',
 		'@typescript-eslint/quotes': ['error', 'single', {
 			avoidEscape: true,
-		}], */
+		}],
+
+		'brace-style': 'off',
+		'@typescript-eslint/brace-style': ['error', '1tbs', {
+			allowSingleLine: true,
+		}],
+
+		// Aedris: Spaces in anonymous functions are a no.
+		'space-before-function-paren': 'off',
+		'@typescript-eslint/space-before-function-paren': ['error', {
+			anonymous: 'never',
+			named: 'never',
+			asyncArrow: 'always',
+		}],
 
 		// OTHERS
 		// Import plugin isn't aware of type only imports, resulting in those being marked as error despite not causing any issues. (see https://github.com/typescript-eslint/typescript-eslint/issues/986)

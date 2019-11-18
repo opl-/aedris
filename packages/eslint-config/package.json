@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@aedris/eslint-config-vanilla": "^1.0.0",
-    "@typescript-eslint/eslint-plugin": "^2.6.1",
-    "@typescript-eslint/parser": "^2.6.1"
+    "@typescript-eslint/eslint-plugin": "^2.8.0",
+    "@typescript-eslint/parser": "^2.8.0"
   },
   "devDependencies": {
     "typescript": "^3.7.2"
