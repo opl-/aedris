@@ -93,6 +93,11 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 		this.webpackCompiler = webpack(this.targets.map((v) => v.webpackConfig));
 
+		// Assign the individual targets their compiler instance
+		this.targets.forEach((acc, index) => {
+			acc.compiler = this.webpackCompiler.compilers[index];
+		});
+
 		log('Creating entry points');
 
 		Object.values(this.targets).forEach((target) => {

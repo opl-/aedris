@@ -1,4 +1,4 @@
-import {Configuration, ExternalsElement} from 'webpack';
+import {Configuration, ExternalsElement, Compiler} from 'webpack';
 import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
@@ -53,6 +53,9 @@ export class BuildTarget {
 
 	/** Webpack config used for this build */
 	webpackConfig: Configuration;
+
+	/** This target's webpack compiler */
+	compiler?: Compiler;
 
 	constructor(owner: Builder, opts: TargetOptions) {
 		this.builder = owner;
