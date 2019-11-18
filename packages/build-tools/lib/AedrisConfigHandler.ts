@@ -8,7 +8,6 @@ export interface AedrisPluginConfig {
 	/** `true` if this config has been normalized. */
 	aedrisNormalized?: boolean;
 
-	// TODO: make use of this
 	/** If `true` this config describes an Aedris plugin. This changes the build configuration. */
 	isPlugin: boolean;
 

@@ -6,7 +6,6 @@ import WebpackVirtualModules from 'webpack-virtual-modules';
 import {WebpackConfigCreator, DefaultContext} from '../Builder';
 import externalsGenerator from '../util/externals';
 
-// TODO: clean output directories
 // TODO: use file-loader, style-loader, css-loader
 // TODO: add aliases
 

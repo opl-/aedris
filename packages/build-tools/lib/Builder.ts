@@ -65,7 +65,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 	get config() {
 		return this.configHandler.config;
-		}
+	}
 
 	async load(): Promise<Builder> {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
@@ -140,7 +140,6 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	}
 
 	setDynamicModule(dynamicModuleName: string, modulePath: string) {
-		// TODO: webpack's resolve.alias might work here too and would be much less troublesome
 		this.dynamicAppModules[dynamicModuleName] = modulePath;
 	}
 
