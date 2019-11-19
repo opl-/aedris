@@ -41,7 +41,7 @@ export default abstract class PluginManager<T> {
 	 * @param pluginRef Name or path of plugin to load
 	 */
 	usePlugin(pluginRef: string): void {
-		log('Adding plugin %s to load queue', pluginRef);
+		log('Adding plugin %j to load queue', pluginRef);
 
 		this.pluginQueue.push(pluginRef);
 	}
@@ -52,7 +52,7 @@ export default abstract class PluginManager<T> {
 	 * @param pluginRef Name or path relative to project root of the plugin
 	 */
 	async loadPlugin(pluginRef: string, {resolvePaths}: LoadPluginOptions = {}): Promise<void> {
-		log('Applying plugin %s', pluginRef);
+		log('Applying plugin %j', pluginRef);
 
 		const isLocalPluginRef = /^[./]/.test(pluginRef);
 
@@ -69,10 +69,10 @@ export default abstract class PluginManager<T> {
 		const pluginName = isLocalPluginRef ? pluginPath : pluginRef;
 
 		// Don't load plugins twice
-		if (this.registeredPlugins[pluginName]) return void log(`  Already loaded (by name: ${JSON.stringify(pluginName)})`);
-		if (Object.values(this.registeredPlugins).some((info) => info.absolutePath === pluginPath)) return void log(`  Already loaded (by path: ${JSON.stringify(pluginPath)})`);
+		if (this.registeredPlugins[pluginName]) return void log('  Already loaded (by name: %j)', pluginName);
+		if (Object.values(this.registeredPlugins).some((info) => info.absolutePath === pluginPath)) return void log('  Already loaded (by path: %j)', pluginPath);
 
-		log('  Loading from %s', pluginPath);
+		log('  Loading from %j', pluginPath);
 
 		const plugin: T = (await import(pluginPath)).default;
 

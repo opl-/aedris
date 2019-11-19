@@ -154,7 +154,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 	// TODO: why is this async?
 	async createTarget(opts: TargetOptions): Promise<BuildTarget> {
-		log('Creating target %s with context %s', JSON.stringify(opts.name), JSON.stringify(opts.context));
+		log('Creating target %j with context %j', opts.name, opts.context);
 
 		if (this.getTarget(opts.name)) throw new Error(`Tried to create Target with duplicate name ${JSON.stringify(opts.name)}`);
 
@@ -168,7 +168,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	}
 
 	registerContext(contextName: string, configCreator: WebpackConfigCreator) {
-		log('Registering context %s', JSON.stringify(contextName));
+		log('Registering context %j', contextName);
 
 		this.contextToConfigCreatorMap[contextName] = configCreator;
 	}

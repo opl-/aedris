@@ -69,7 +69,7 @@ export class AedrisConfigHandler {
 	 */
 	async loadConfig(): Promise<void> {
 		if (this.configPath) {
-			log('Loading config from %s', this.configPath);
+			log('Loading config from %j', this.configPath);
 
 			try {
 				// eslint-disable-next-line global-require, import/no-dynamic-require

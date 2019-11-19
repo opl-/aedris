@@ -77,7 +77,7 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 	}
 
 	registerTask(taskName: string, taskConstructor: TaskLike) {
-		log('Registering task %s', JSON.stringify(taskName));
+		log('Registering task %j', taskName);
 
 		this.tasks[taskName] = taskConstructor;
 	}
