@@ -120,7 +120,7 @@ export class AedrisConfigHandler {
 		if (!Array.isArray(config.plugins)) config.plugins = [];
 
 		if (isAppConfig(config)) {
-			if (config.publicPath) config.publicPath = config.publicPath || '/_/res/';
+			config.publicPath = config.publicPath || '/_/res/';
 		}
 
 		return config;
