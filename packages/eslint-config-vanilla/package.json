@@ -1,7 +1,7 @@
 {
   "name": "@aedris/eslint-config-vanilla",
   "version": "1.0.0",
-  "description": "Lerna config for non-TypeScript projects.",
+  "description": "ESLint config for non-TypeScript projects.",
   "author": "opl- <opl-@users.noreply.github.com>",
   "homepage": "https://github.com/opl-/aedris/packages/eslint-config-vanilla#readme",
   "license": "MIT",
