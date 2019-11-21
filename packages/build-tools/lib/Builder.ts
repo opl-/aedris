@@ -67,6 +67,11 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		return this.configHandler.config;
 	}
 
+	getPluginOptions<T>(pluginRef: string): T {
+		// TODO: resolve plugin ref
+		return this.config.options[pluginRef];
+	}
+
 	async load(): Promise<Builder> {
 		if (this.webpackCompiler) throw new Error('Builder instance already loaded');
 
@@ -77,6 +82,13 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		log('Passing config to plugins');
 
 		this.configHandler.config = this.hooks.normalizeConfig.call(this.config);
+
+		Object.entries(this.registeredPlugins).forEach(([pluginName, info]) => {
+			if (!info.plugin.normalizeOptions) return;
+
+			// TODO: resolve local plugin names
+			this.config.options[pluginName] = info.plugin.normalizeOptions(this.config.options[pluginName]);
+		});
 
 		// The config is now fully normalized for plugins to use
 		await this.hooks.afterConfig.promise(this);

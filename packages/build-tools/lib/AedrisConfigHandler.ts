@@ -23,6 +23,10 @@ export interface AedrisPluginConfig {
 
 	/** Array of plugins to register. Plugins can be passed either in the form of a package name or a file path relative to the config file. */
 	plugins: string[];
+	/** Object containing plugin configurations. */
+	options: {
+		[pluginName: string]: any;
+	};
 }
 
 export interface AedrisAppConfig extends AedrisPluginConfig {
@@ -118,6 +122,9 @@ export class AedrisConfigHandler {
 
 		// Normalize plugin list
 		if (!Array.isArray(config.plugins)) config.plugins = [];
+
+		// Normalize the plugin options object. Options for individual plugins are normalized later by the plugins themselves.
+		config.options = config.options || {};
 
 		if (isAppConfig(config)) {
 			config.publicPath = config.publicPath || '/_/res/';

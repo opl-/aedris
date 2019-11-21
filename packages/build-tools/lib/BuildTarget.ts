@@ -76,6 +76,11 @@ export class BuildTarget {
 		return this.builder.config;
 	}
 
+	getPluginOptions<T>(pluginRef: string): T {
+		// TODO: resolve plugin ref
+		return this.config.options[pluginRef];
+	}
+
 	getWebpackConfigCreatorForContext(context: string): WebpackConfigCreator {
 		return this.builder.contextToConfigCreatorMap[context];
 	}
