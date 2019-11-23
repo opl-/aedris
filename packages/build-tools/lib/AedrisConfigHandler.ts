@@ -142,6 +142,8 @@ export class AedrisConfigHandler {
 	}
 
 	static deepClone(obj: any): any {
+		if (obj instanceof Function) return obj;
+
 		if (Array.isArray(obj)) return obj.map((elem) => this.deepClone(elem));
 
 		if (obj instanceof Object) {
