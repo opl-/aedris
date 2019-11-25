@@ -4,7 +4,7 @@ import ToolsManager from './ToolsManager';
 export default interface AedrisPlugin {
 	normalizeOptions?(options: any): any;
 
-	hookTools?(toolManager: ToolsManager): void | Promise<void>;
+	hookTools?(toolManager: ToolsManager): any | Promise<any>;
 
-	hookBuild?(builder: Builder): void | Promise<void>;
+	hookBuild?(builder: Builder): any | Promise<any>;
 }

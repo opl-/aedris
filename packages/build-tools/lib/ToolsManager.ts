@@ -71,9 +71,10 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 		});
 	}
 
-	async doApplyPlugin(plugin: AedrisPlugin) {
+	// eslint-disable-next-line consistent-return
+	async doApplyPlugin(plugin: AedrisPlugin): Promise<any> {
 		// Call hook only if it exists
-		if (plugin && typeof plugin.hookTools === 'function') await plugin.hookTools(this);
+		if (plugin && typeof plugin.hookTools === 'function') return plugin.hookTools(this);
 	}
 
 	registerTask(taskName: string, taskConstructor: TaskLike) {

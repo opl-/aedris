@@ -5,6 +5,7 @@ const log = debug('aedris:build-tools:PluginManager');
 export interface PluginInfo<T> {
 	absolutePath: string;
 	plugin: T;
+	instance: any;
 }
 
 export interface LoadPluginOptions {
@@ -88,16 +89,31 @@ export default abstract class PluginManager<T> {
 	 * @param pluginName Name of the plugin
 	 * @param pluginInfo Object containing information about the plugin
 	 */
-	async applyPlugin(pluginName: string, pluginInfo: PluginInfo<T>) {
-		this.registeredPlugins[pluginName] = pluginInfo;
+	async applyPlugin(pluginName: string, pluginInfo: Omit<PluginInfo<T>, 'instance'>) {
+		this.registeredPlugins[pluginName] = {
+			...pluginInfo,
+			instance: undefined,
+		};
 
-		await this.doApplyPlugin(pluginInfo.plugin);
+		const instance = await this.doApplyPlugin(pluginInfo.plugin);
+
+		this.registeredPlugins[pluginName].instance = instance;
 	}
 
 	/**
 	 * Called to apply the loaded plugin object.
 	 *
 	 * @param plugin Plugin to apply
+	 * @returns Object exposed by plugin
 	 */
-	abstract async doApplyPlugin(plugin: T): Promise<void>;
+	abstract async doApplyPlugin(plugin: T): Promise<any>;
+
+	/**
+	 * @param pluginName Name of the plugin
+	 * @returns Instance returned by the plugin or `undefined`.
+	 */
+	getPluginInstance(pluginName: string): any {
+		// TODO: resolve pluginName as ref for local plugins?
+		return this.registeredPlugins[pluginName].instance;
+	}
 }

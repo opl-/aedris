@@ -141,9 +141,10 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		});
 	}
 
-	async doApplyPlugin(plugin: AedrisPlugin) {
+	// eslint-disable-next-line consistent-return
+	async doApplyPlugin(plugin: AedrisPlugin): Promise<any> {
 		// Call hook only if it exists
-		if (plugin && typeof plugin.hookBuild === 'function') await plugin.hookBuild(this);
+		if (plugin && typeof plugin.hookBuild === 'function') return plugin.hookBuild(this);
 	}
 
 	async registerDynamicModules() {
