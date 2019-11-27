@@ -40,13 +40,19 @@ export default class Backend extends Koa {
 		this.router.use('/_', this.backendRouter.callback());
 
 		// Set up SSR
-		// TODO: config
-		this.bundleRenderer = createBundleRenderer(path.resolve(APP_ROOT, 'dist/frontend-server/vue-ssr-server-bundle.json'), {
-			clientManifest: JSON.parse(fs.readFileSync(path.resolve(APP_ROOT, 'dist/frontend-client/vue-ssr-client-manifest.json'), 'utf8')),
-			template: htmlTemplate,
-		});
+		this.createBundleRenderer();
 
 		this.router.use((ctx) => {
+			if (process.env.NODE_ENV === 'development' && !this.bundleRenderer) {
+				// TODO: handle creating the bundle renderer more gracefully
+				this.createBundleRenderer();
+
+				if (!this.bundleRenderer) {
+					ctx.body = 'Renderer not ready.';
+					return;
+				}
+			}
+
 			ctx.type = 'html';
 			ctx.response.body = this.bundleRenderer.renderToStream({
 				url: ctx.path,
@@ -56,5 +62,27 @@ export default class Backend extends Koa {
 
 		// Mount the global router
 		this.use(this.router.callback());
+	}
+
+	createBundleRenderer() {
+		try {
+			// TODO: config
+			this.bundleRenderer = createBundleRenderer(path.resolve(APP_ROOT, 'dist/frontend-server/vue-ssr-server-bundle.json'), {
+				clientManifest: JSON.parse(fs.readFileSync(path.resolve(APP_ROOT, 'dist/frontend-client/vue-ssr-client-manifest.json'), 'utf8')),
+				template: htmlTemplate,
+			});
+		} catch (ex) {
+			if (process.env.NODE_ENV === 'development') {
+				// The bundles might not exist in development - this is expected
+				if (ex.code === 'ENOENT') {
+					console.log('Server bundles not ready. Bundle renderer not created.');
+				} else {
+					console.error('error creating bundle renderer:', ex);
+				}
+			} else {
+				// Rethrow the error in production
+				throw ex;
+			}
+		}
 	}
 }
