@@ -12,8 +12,6 @@ export default class CleanTask extends Task<typeof CleanTask> {
 
 	hooks = {
 		builderCreated: new AsyncSeriesHook<Builder, CleanTask>(['builder', 'cleanTask']),
-		beforeClean: new AsyncSeriesHook<CleanTask>(['cleanTask']),
-		afterClean: new AsyncSeriesHook<CleanTask>(['cleanTask']),
 	};
 
 	builder: Builder;
@@ -30,10 +28,6 @@ export default class CleanTask extends Task<typeof CleanTask> {
 
 		await this.builder.load();
 
-		await this.hooks.beforeClean.promise(this);
-
 		await this.builder.cleanOutputs();
-
-		await this.hooks.afterClean.promise(this);
 	}
 }

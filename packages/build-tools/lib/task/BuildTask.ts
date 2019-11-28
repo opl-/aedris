@@ -35,9 +35,6 @@ export default class BuildTask extends Task<typeof BuildTask> {
 
 	hooks = {
 		builderCreated: new AsyncSeriesHook<Builder, BuildTask>(['builder', 'buildTask']),
-		beforeWatch: new AsyncSeriesHook<BuildTask>(['buildTask']),
-		beforeBuild: new AsyncSeriesHook<BuildTask>(['buildTask']),
-		afterBuild: new AsyncSeriesHook<BuildTask>(['buildTask']),
 	};
 
 	builder: Builder;
@@ -79,15 +76,10 @@ export default class BuildTask extends Task<typeof BuildTask> {
 		}
 
 		if (this.argv.watch) {
-			await this.hooks.beforeWatch.promise(this);
-
 			await this.builder.watch();
 		} else {
-			await this.hooks.beforeBuild.promise(this);
-
+			// FIXME: process needs to exit with appropriate status code on failure
 			await this.builder.build();
-
-			await this.hooks.afterBuild.promise(this);
 		}
 	}
 

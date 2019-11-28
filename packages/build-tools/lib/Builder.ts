@@ -55,6 +55,11 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		prepareWebpackConfig: new SyncWaterfallHook<ChainConfig, BuildTarget>(['webpackConfig', 'target']),
 		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
+		beforeClean: new AsyncSeriesHook<Builder>(['builder']),
+		afterClean: new AsyncSeriesHook<Builder>(['builder']),
+		beforeWatch: new AsyncSeriesHook<Builder>(['builder']),
+		beforeBuild: new AsyncSeriesHook<Builder>(['builder']),
+		afterBuild: new AsyncSeriesHook<Builder>(['builder']),
 	};
 
 	constructor(opts: BuilderOptions) {
@@ -187,6 +192,8 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	}
 
 	async cleanOutputs(): Promise<void> {
+		await this.hooks.beforeClean.promise(this);
+
 		// Remove the output directory specified in the config
 		const outputDirectories = ([this.config.outputDir] as (string | undefined)[])
 			// Add output directories from all targets, as those might be outside of the output dir from config
@@ -201,16 +208,24 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		await Promise.all(outputDirectories.map((dir) => fs.rmdir(dir, {
 			recursive: true,
 		})));
+
+		await this.hooks.afterClean.promise(this);
 	}
 
 	async build(): Promise<void> {
 		await this.cleanOutputs();
 
+		await this.hooks.beforeBuild.promise(this);
+
 		await promisify(this.webpackCompiler.run.bind(this.webpackCompiler))();
+
+		await this.hooks.afterBuild.promise(this);
 	}
 
 	async watch(): Promise<void> {
 		await this.cleanOutputs();
+
+		await this.hooks.beforeWatch.promise(this);
 
 		this.webpackWatcher = this.webpackCompiler.watch({
 			aggregateTimeout: 500,
