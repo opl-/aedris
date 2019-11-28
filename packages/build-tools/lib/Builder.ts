@@ -87,7 +87,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 			if (!info.plugin.normalizeOptions) return;
 
 			// TODO: resolve local plugin names
-			this.config.options[pluginName] = info.plugin.normalizeOptions(this.config.options[pluginName]);
+			this.config.options[pluginName] = info.plugin.normalizeOptions(this.config.options[pluginName], this.config);
 		});
 
 		// The config is now fully normalized for plugins to use
