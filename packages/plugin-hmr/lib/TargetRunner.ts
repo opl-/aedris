@@ -1,6 +1,7 @@
 import {BuildTarget} from '@aedris/build-tools';
 import cp, {ChildProcess, ChildProcessWithoutNullStreams} from 'child_process';
 import debug from 'debug';
+import {Compiler} from 'webpack';
 
 import {HMRPluginOptions} from './HMRPluginOptions';
 
@@ -26,7 +27,14 @@ export class TargetRunner {
 	}
 
 	createHooks() {
-		this.target.compiler!.hooks.done.tap(HOOK_NAME, (stats) => {
+		// Only hook the compiler if we are entering watch mode
+		this.target.builder.hooks.beforeWatch.tap(HOOK_NAME, () => {
+			this.hookCompiler(this.target.compiler!);
+		});
+	}
+
+	hookCompiler(compiler: Compiler) {
+		compiler.hooks.done.tap(HOOK_NAME, (stats) => {
 			const statsJson = stats.toJson();
 			if (!statsJson.entrypoints || !statsJson.outputPath) return;
 
