@@ -1,8 +1,8 @@
 export interface EntryPointBehavior {
-	/** Should the `webpack-hot-middleware/client` module be added to this entry? */
+	/** Should the `webpack-hot-middleware/client` module be added to this entry? Defaults to `false`. */
 	hmrClient?: boolean;
 
-	/** Whether the program should be ran when bundle is rebuilt. `'once'` runs the program only the first time the bundle is rebuilt. */
+	/** Whether the program should be ran when bundle is rebuilt. `'once'` runs the program only the first time the bundle is rebuilt. Defaults to `false`. */
 	run?: boolean | 'once';
 
 	/** Program to be ran when the bundle builds. Defaults to `'node'`. */
@@ -14,7 +14,7 @@ export interface EntryPointBehavior {
 	/** Working directory to switch to. Defaults to the `rootDir` of the build target. */
 	cwd?: string;
 
-	/** Time in milliseconds before the process is killed with SIGKILL after SIGTERM was sent. Defaults to 30000. */
+	/** Time in milliseconds before the process is killed with SIGKILL after SIGTERM was sent. -1 to wait forever. Defaults to 30000. */
 	killTimeout?: number;
 }
 
