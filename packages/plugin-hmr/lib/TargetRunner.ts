@@ -34,13 +34,11 @@ export class TargetRunner {
 	}
 
 	hookCompiler(compiler: Compiler) {
-		compiler.hooks.done.tap(HOOK_NAME, (stats) => {
+		compiler.hooks.done.tapPromise(HOOK_NAME, async (stats) => {
 			const statsJson = stats.toJson();
 			if (!statsJson.entrypoints || !statsJson.outputPath) return;
 
-			Object.keys(statsJson.entrypoints).forEach((entryPointName) => {
-				this.handleBuilt(entryPointName);
-			});
+			await Promise.all(Object.keys(statsJson.entrypoints).map((entryPointName) => this.handleBuilt(entryPointName)));
 		});
 	}
 
