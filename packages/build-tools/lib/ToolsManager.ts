@@ -49,6 +49,13 @@ export default class ToolsManager extends PluginManager<AedrisPlugin> {
 		log('Passing config to plugins');
 		this.configHandler.config = this.hooks.normalizeConfig.call(this.config);
 
+		Object.entries(this.registeredPlugins).forEach(([pluginName, info]) => {
+			if (!info.plugin.normalizeOptions) return;
+
+			// TODO: resolve local plugin names
+			this.config.options[pluginName] = info.plugin.normalizeOptions(this.config.options[pluginName], this.config);
+		});
+
 		log('Config loaded');
 
 		await this.hooks.afterConfig.promise(this);
