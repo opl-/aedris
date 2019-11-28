@@ -1,5 +1,5 @@
 import {BuildTarget} from '@aedris/build-tools';
-import cp, {ChildProcess} from 'child_process';
+import cp, {ChildProcess, ChildProcessWithoutNullStreams} from 'child_process';
 import debug from 'debug';
 
 import {HMRPluginOptions} from './HMRPluginOptions';
@@ -52,9 +52,12 @@ export class TargetRunner {
 			this.log('Spawning process for entry %j', entryPointName);
 
 			const proc = cp.spawn(options.program || 'node', options.args || [], {
+				// Do not spawn a shell - less overhead
 				shell: false,
+				// Open an IPC channel on top of all the other channels
+				stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
 				cwd: options.cwd || this.target.config.rootDir,
-			});
+			}) as ChildProcessWithoutNullStreams; // TODO: definitelytyped types for node are invalid with additional stdio args. open an issue/PR
 
 			// Pipe the child process outputs through the parent process outputs
 			if (options.printOutput === true) {
