@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"noImplicitAny": true,
+		"alwaysStrict": true,
+		"strictNullChecks": true,
+		"preserveConstEnums": true,
+		"esModuleInterop": true,
+		"outDir": "./dist/",
+		"sourceMap": true,
+		"declaration": true,
+		"moduleResolution": "node"
+	},
+	"include": [
+		"lib/**/*",
+		"extend-types.d.ts"
+	],
+	"exclude": [
+		"node_modules"
+	]
+}

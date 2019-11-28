@@ -1,0 +1,41 @@
+{
+  "name": "@aedris/plugin-hmr",
+  "version": "0.1.0",
+  "description": "Aedris plugin adding support for Hot Module Replacement.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris#readme",
+  "license": "MIT",
+  "main": "dist/build.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "lint": "eslint --ext .js,.ts lib/",
+    "build": "aedris build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "webpack-hot-middleware": "^2.25.0"
+  },
+  "devDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "@aedris/eslint-config": "^1.0.0",
+    "@types/webpack-hot-middleware": "^2.16.5"
+  },
+  "peerDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "webpack": "^4.39.1"
+  }
+}
