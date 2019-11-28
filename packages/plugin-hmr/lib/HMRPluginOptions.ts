@@ -16,6 +16,10 @@ export interface EntryPointBehavior {
 
 	/** Time in milliseconds before the process is killed with SIGKILL after SIGTERM was sent. -1 to wait forever. Defaults to 30000. */
 	killTimeout?: number;
+
+	// TODO: should this be a little more comprehensive? things like disabling the ipc channel?
+	/** Pipes the output of the child process through the respective outputs of the parent. Defaults to `true`. */
+	printOutput?: boolean;
 }
 
 export type HMRPluginOptions = false | {

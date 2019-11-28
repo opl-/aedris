@@ -56,8 +56,11 @@ export class TargetRunner {
 				cwd: options.cwd || this.target.config.rootDir,
 			});
 
-			proc.stdout.pipe(process.stdout);
-			proc.stderr.pipe(process.stderr);
+			// Pipe the child process outputs through the parent process outputs
+			if (options.printOutput === true) {
+				proc.stdout.pipe(process.stdout);
+				proc.stderr.pipe(process.stderr);
+			}
 
 			this.entryProcess[entryPointName] = proc;
 		}

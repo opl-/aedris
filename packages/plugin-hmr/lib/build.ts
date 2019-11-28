@@ -18,6 +18,14 @@ export default <AedrisPlugin> {
 
 		if (!opts.entryPoint) opts.entryPoint = {};
 
+		/* eslint-disable no-param-reassign */
+		Object.values(opts.entryPoint).forEach((entryPoint) => {
+			if (!entryPoint) return;
+
+			if (entryPoint.printOutput === undefined) entryPoint.printOutput = true;
+		});
+		/* eslint-enable */
+
 		return opts;
 	},
 	hookBuild(builder: Builder) {
