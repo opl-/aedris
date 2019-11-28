@@ -13,10 +13,6 @@ export interface AedrisPluginConfig {
 
 	/** Root directory of the project. All relative paths are resolved from this directory. Defaults to the location of the config. */
 	rootDir: string;
-	/** Root directory of the frontend. Should be relative to the `rootDir`. Defaults to `./frontend`. */
-	frontendDir: string;
-	/** Root directory of the backend. Should be relative to the `rootDir`. Defaults to `./backend`. */
-	backendDir: string;
 
 	/** Output directory for the build artifacts. Should be relative to the `rootDir`. Defaults to `./dist`. */
 	outputDir: string;
@@ -116,8 +112,6 @@ export class AedrisConfigHandler {
 		else config.rootDir = this.resolvePath(configDir, config.rootDir, 'rootDir');
 
 		// Normalize project directories
-		config.frontendDir = this.resolvePath(config.rootDir, config.frontendDir || './frontend', 'frontendDir');
-		config.backendDir = this.resolvePath(config.rootDir, config.backendDir || './backend', 'backendDir');
 		config.outputDir = this.resolvePath(config.rootDir, config.outputDir || './dist', 'outputDir');
 
 		// Normalize plugin list
