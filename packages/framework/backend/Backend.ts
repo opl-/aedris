@@ -66,6 +66,19 @@ export default class Backend extends Koa {
 
 		// Mount the global router
 		this.use(this.router.callback());
+
+		this.createHotMiddleware();
+	}
+
+	async createHotMiddleware() {
+		if (process.env.NODE_ENV !== 'development') return;
+
+		// Lazy import as it's a development only dependency
+		const {WebpackHotMiddlewareHandler} = await import('./WebpackHotMiddlewareHandler');
+
+		const hotMiddlewareHandler = new WebpackHotMiddlewareHandler();
+
+		this.globalMiddleware.push(hotMiddlewareHandler.koaMiddleware);
 	}
 
 	createBundleRenderer() {

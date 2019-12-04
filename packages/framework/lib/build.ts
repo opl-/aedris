@@ -7,6 +7,7 @@ import {
 	Builder,
 	DefaultContext,
 } from '@aedris/build-tools';
+import {HMRPluginInstance, HMRPluginOptions} from '@aedris/plugin-hmr';
 import path from 'path';
 
 import {FrameworkOptions} from './FrameworkOptions';
@@ -31,6 +32,81 @@ export {
 	TARGET_NAME,
 };
 
+function addHMRSupport(builder: Builder) {
+	builder.usePlugin('@aedris/plugin-hmr');
+
+	// Override plugin-hmr settings to run the backend and include HMR client in the frontend bundle
+	builder.hooks.normalizeConfig.tap(HOOK_NAME, (config) => {
+		if (builder.config.isPlugin || !builder.isDevelopment) return config;
+
+		const options: Partial<Exclude<HMRPluginOptions, false>> = config.options['@aedris/plugin-hmr'] || {};
+
+		options.entryPoint = options.entryPoint || {};
+
+		// TODO: use overrides
+		options.entryPoint.backend = {
+			run: true,
+			args: [
+				// TODO: use config
+				'dist/backend/backend.js',
+			],
+		};
+		options.entryPoint.app = {
+			hmrClient: true,
+		};
+
+		// eslint-disable-next-line no-param-reassign
+		config.options['@aedris/plugin-hmr'] = options as HMRPluginOptions;
+
+		return config;
+	});
+
+	// Forward some of the webpack hooks to the backend, so the hot-middleware can work
+	builder.hooks.beforeWatch.tap(HOOK_NAME, (b) => {
+		if (builder.config.isPlugin || !builder.isDevelopment) return;
+
+		/* TODO: we will probably need to forward both the frontend server and client bundle events to the backend so that hmr can work but also so the bundle renderer can be recreated. maybe
+		propagating those events should even be the responsibility of the build tools? might also simplify parallel builds */
+
+		const target = b.getTarget(TARGET_NAME.app.frontendClient);
+		if (!target) throw new Error(`${JSON.stringify(TARGET_NAME.app.frontendClient)} target does not exist in afterLoad`);
+
+		target.compiler!.hooks.done.tap({
+			name: HOOK_NAME,
+			stage: 100,
+		}, (stats) => {
+			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr') as HMRPluginInstance;
+
+			if (!hmrPlugin.targetRunners[TARGET_NAME.app.backend]?.entryProcess.backend) return;
+
+			hmrPlugin.targetRunners[TARGET_NAME.app.backend].entryProcess.backend.send({
+				t: '@aedris/framework:compiler:done',
+				d: [
+					// See https://github.com/webpack-contrib/webpack-hot-middleware/blob/cb29abb9dde435a1ac8e9b19f82d7d36b1093198/middleware.js#L118
+					stats.toJson({
+						all: false,
+						cached: true,
+						children: true,
+						modules: true,
+						timings: true,
+						hash: true,
+					}),
+				],
+			});
+		});
+
+		target.compiler!.hooks.invalid.tap(HOOK_NAME, () => {
+			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr') as HMRPluginInstance;
+
+			if (!hmrPlugin.targetRunners[TARGET_NAME.app.backend]?.entryProcess.backend) return;
+
+			hmrPlugin.targetRunners[TARGET_NAME.app.backend].entryProcess.backend.send({
+				t: '@aedris/framework:compiler:invalid',
+			});
+		});
+	});
+}
+
 export default <AedrisPlugin> {
 	normalizeOptions(options: undefined | FrameworkOptions, config): FrameworkOptions {
 		const opts = (options || {}) as FrameworkOptions;
@@ -42,6 +118,8 @@ export default <AedrisPlugin> {
 	},
 	hookBuild(builder: Builder): void {
 		builder.usePlugin('@aedris/vue');
+
+		addHMRSupport(builder);
 
 		builder.hooks.registerTargets.tapPromise(HOOK_NAME, (b) => {
 			if (builder.config.isPlugin) {
