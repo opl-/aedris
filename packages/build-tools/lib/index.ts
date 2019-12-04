@@ -8,7 +8,6 @@ import {
 import AedrisPlugin from './AedrisPlugin';
 import {Builder, DefaultContext, WebpackConfigCreator} from './Builder';
 import {BuildTarget, TargetOptions} from './BuildTarget';
-import RuntimePluginLoader, {RuntimePlugin} from './RuntimePluginLoader';
 import ToolsManager, {ToolsManagerOptions} from './ToolsManager';
 
 export {
@@ -21,8 +20,6 @@ export {
 	Builder,
 	BuildTarget,
 	DefaultContext,
-	RuntimePlugin,
-	RuntimePluginLoader,
 	TargetOptions,
 	ToolsManager,
 	ToolsManagerOptions,

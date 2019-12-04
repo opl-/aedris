@@ -3,7 +3,7 @@ import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 import {Builder, WebpackConfigCreator} from './Builder';
-import entryTemplate from './entryTemplate';
+import entryTemplate from './runtime/entryTemplate';
 import webpackConfigBase from './webpack-config/webpack.base';
 
 export interface TargetOptions {

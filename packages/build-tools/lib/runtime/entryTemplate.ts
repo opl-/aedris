@@ -1,5 +1,5 @@
 export default function entryTemplate(plugins: string[]): string {
-	return `import RuntimePluginLoader from '@aedris/build-tools/dist/RuntimePluginLoader';
+	return `import RuntimePluginLoader from '@aedris/build-tools/dist/runtime/RuntimePluginLoader';
 
 const loader = new RuntimePluginLoader();
 [
