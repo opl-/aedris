@@ -75,6 +75,10 @@ export default <AedrisPlugin> {
 				const options = target.getPluginOptions(HOOK_NAME);
 				if (!options) return;
 
+				// Create TargetRunners only for targets that have enabled options for at least one entry point
+				const namesInOptions = Object.entries(options.entryPoint).filter(([, value]) => !!value).map(([name]) => name);
+				if (!Object.keys(target.entry).some((name) => namesInOptions.includes(name))) return;
+
 				const runner = new TargetRunner(target);
 				runner.createHooks();
 				instance.targetRunners[target.name] = runner;
