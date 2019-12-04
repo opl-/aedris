@@ -1,6 +1,6 @@
 export interface EntryPointBehavior {
-	/** Should the `webpack-hot-middleware/client` module be added to this entry? Defaults to `false`. */
-	hmrClient?: boolean;
+	/** If `true`, adds the `webpack-hot-middleware/client` module to this entry. Passing a string uses it as options for the module. Defaults to `false`. */
+	hmrClient?: boolean | string;
 
 	/** Whether the program should be ran when bundle is rebuilt. `'once'` runs the program only the first time the bundle is rebuilt. Defaults to `false`. */
 	run?: boolean | 'once';

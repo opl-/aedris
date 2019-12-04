@@ -52,7 +52,10 @@ export default <AedrisPlugin> {
 				foundEntryPoints = true;
 
 				// Add the HMR client to all hmrClient bundles
-				if (entryOptions.hmrClient) entry.prepend('webpack-hot-middleware/client');
+				const hmrClientOption = entryOptions.hmrClient;
+				if (hmrClientOption) {
+					entry.prepend(`webpack-hot-middleware/client${typeof hmrClientOption === 'string' ? `?${hmrClientOption}` : ''}`);
+				}
 			});
 
 			if (options.hmrPlugin === true || (foundEntryPoints && options.hmrPlugin !== false)) {
