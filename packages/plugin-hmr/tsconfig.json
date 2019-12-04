@@ -14,7 +14,7 @@
 	},
 	"include": [
 		"lib/**/*",
-		"extend-types.d.ts"
+		"lib/extend-types.ts"
 	],
 	"exclude": [
 		"node_modules"

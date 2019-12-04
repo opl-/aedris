@@ -1,12 +1,10 @@
-import {AedrisPluginConfig} from '@aedris/build-tools/dist/AedrisConfigHandler';
+import {AedrisPluginOptions} from '@aedris/build-tools/dist/AedrisConfigHandler';
 
-import {FrameworkOptions} from './lib/FrameworkOptions';
+import {FrameworkOptions} from './FrameworkOptions';
 
 declare module '@aedris/build-tools' {
-	interface AedrisPluginConfig {
-		options: {
-			'@aedris/framework': FrameworkOptions;
-		};
+	interface AedrisPluginOptions {
+		'@aedris/framework': FrameworkOptions;
 	}
 
 	interface Builder {

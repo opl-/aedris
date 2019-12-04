@@ -1,3 +1,6 @@
+// Type extensions
+import './extend-types';
+
 import {AedrisPlugin, Builder, DefaultContext} from '@aedris/build-tools';
 import {AedrisConfigHandler} from '@aedris/build-tools/dist/AedrisConfigHandler';
 import path from 'path';

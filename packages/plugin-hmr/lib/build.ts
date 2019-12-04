@@ -1,3 +1,6 @@
+// Type extensions
+import './extend-types';
+
 import {AedrisPlugin, Builder} from '@aedris/build-tools';
 import {HotModuleReplacementPlugin} from 'webpack';
 

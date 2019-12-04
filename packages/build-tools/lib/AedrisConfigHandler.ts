@@ -4,6 +4,10 @@ import path from 'path';
 
 const log = debug('aedris:build-tools:AedrisConfigHandler');
 
+export interface AedrisPluginOptions {
+	[pluginName: string]: any;
+}
+
 export interface AedrisPluginConfig {
 	/** `true` if this config has been normalized. */
 	aedrisNormalized?: boolean;
@@ -20,9 +24,7 @@ export interface AedrisPluginConfig {
 	/** Array of plugins to register. Plugins can be passed either in the form of a package name or a file path relative to the config file. */
 	plugins: string[];
 	/** Object containing plugin configurations. */
-	options: {
-		[pluginName: string]: any;
-	};
+	options: AedrisPluginOptions;
 }
 
 export interface AedrisAppConfig extends AedrisPluginConfig {
