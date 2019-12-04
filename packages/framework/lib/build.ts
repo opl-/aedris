@@ -15,6 +15,22 @@ import {FrameworkOptions} from './FrameworkOptions';
 
 const HOOK_NAME = '@aedris/framework';
 
+const TARGET_NAME = {
+	plugin: {
+		backend: '@aedris/framework:plugin-backend',
+		frontend: '@aedris/framework:plugin-frontend',
+	},
+	app: {
+		backend: '@aedris/framework:app-backend',
+		frontendClient: '@aedris/framework:app-frontend-client',
+		frontendServer: '@aedris/framework:app-frontend-server',
+	},
+};
+
+export {
+	TARGET_NAME,
+};
+
 export default <AedrisPlugin> {
 	normalizeOptions(options: undefined | FrameworkOptions, config): FrameworkOptions {
 		const opts = (options || {}) as FrameworkOptions;
@@ -34,7 +50,7 @@ export default <AedrisPlugin> {
 
 				return Promise.all([
 					b.createTarget({
-						name: '@aedris/framework/plugin-backend-bundle',
+						name: TARGET_NAME.plugin.backend,
 						context: [DefaultContext.NODE],
 						entry: {
 							backend: path.resolve(options.backendDir, 'index.ts'),
@@ -42,7 +58,7 @@ export default <AedrisPlugin> {
 						outputDir: './backend/',
 					}),
 					b.createTarget({
-						name: '@aedris/framework/plugin-frontend-bundle',
+						name: TARGET_NAME.plugin.frontend,
 						context: [DefaultContext.WEB, 'vue', DefaultContext.NODE],
 						entry: {
 							frontend: path.resolve(options.frontendDir, 'index.ts'),
@@ -56,7 +72,7 @@ export default <AedrisPlugin> {
 			// TODO: this is going to skip all the project files and we don't want to skip those >.< (use generated entry)
 			return Promise.all([
 				b.createTarget({
-					name: '@aedris/framework:app-backend-bundle',
+					name: TARGET_NAME.app.backend,
 					context: [DefaultContext.NODE],
 					entry: {
 						backend: '@aedris/framework/dist/backend',
@@ -64,7 +80,7 @@ export default <AedrisPlugin> {
 					outputDir: './backend/',
 				}),
 				b.createTarget({
-					name: '@aedris/framework:app-frontend-client-bundle',
+					name: TARGET_NAME.app.frontendClient,
 					context: [DefaultContext.WEB, 'vue'],
 					entry: {
 						app: '@aedris/framework/dist/entryFrontendClient',
@@ -72,7 +88,7 @@ export default <AedrisPlugin> {
 					outputDir: './frontend-client/',
 				}),
 				b.createTarget({
-					name: '@aedris/framework:app-frontend-server-bundle',
+					name: TARGET_NAME.app.frontendServer,
 					context: [DefaultContext.WEB, 'vue', DefaultContext.NODE],
 					entry: {
 						frontend: '@aedris/framework/dist/entryFrontendServer',
