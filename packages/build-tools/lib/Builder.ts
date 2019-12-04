@@ -238,25 +238,6 @@ export class Builder extends PluginManager<AedrisPlugin> {
 				// Allow plugins to ignore files
 				(filePath, stats) => !!this.hooks.watchShouldIgnore.call(filePath, stats as unknown as Stats),
 			],
-		}, (err, stats) => {
-			if (err) {
-				// TODO: fix this mess
-				console.error(err.stack || err);
-				if ((err as Error & {details?: string}).details) {
-					console.error((err as Error & {details?: string}).details);
-				}
-				return;
-			}
-
-			const info = stats.toJson();
-
-			if (stats.hasErrors()) {
-				console.error(info.errors);
-			}
-
-			if (stats.hasWarnings()) {
-				console.warn(info.warnings);
-			}
-		});
+		}, () => {});
 	}
 }
