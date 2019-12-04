@@ -65,7 +65,7 @@ export default <AedrisPlugin> {
 
 		builder.hooks.afterLoad.tap(HOOK_NAME, (b) => {
 			b.targets.forEach((target) => {
-				const options = target.getPluginOptions<HMRPluginOptions>(HOOK_NAME);
+				const options = target.getPluginOptions(HOOK_NAME);
 				if (!options) return;
 
 				const runner = new TargetRunner(target);

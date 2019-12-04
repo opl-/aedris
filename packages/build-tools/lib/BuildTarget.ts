@@ -76,7 +76,7 @@ export class BuildTarget {
 		return this.builder.config;
 	}
 
-	getPluginOptions<T>(pluginRef: string): T {
+	getPluginOptions(pluginRef: string): unknown {
 		// TODO: resolve plugin ref
 		return this.config.options[pluginRef];
 	}

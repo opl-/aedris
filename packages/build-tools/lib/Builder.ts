@@ -72,7 +72,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		return this.configHandler.config;
 	}
 
-	getPluginOptions<T>(pluginRef: string): T {
+	getPluginOptions(pluginRef: string): unknown {
 		// TODO: resolve plugin ref
 		return this.config.options[pluginRef];
 	}
