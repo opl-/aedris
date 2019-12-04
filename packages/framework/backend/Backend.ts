@@ -20,6 +20,9 @@ export default class Backend extends Koa {
 	/* Router for API endpoints. */
 	readonly apiRouter = new Cottage();
 
+	/* Array of middleware executed for all requests. */
+	readonly globalMiddleware: Middleware[] = [];
+
 	/* Array of middleware executed for all API endpoints. */
 	readonly apiMiddleware: Middleware[] = [];
 
@@ -30,6 +33,7 @@ export default class Backend extends Koa {
 		super();
 
 		// Set up backend routers. Routers get mounted as middleware instead of as Routers to allow modification after mounting.
+		this.router.use(compose(this.globalMiddleware));
 		this.apiRouter.use(compose(this.apiMiddleware));
 
 		// TODO: config
