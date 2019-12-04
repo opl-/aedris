@@ -1,4 +1,4 @@
-import {AedrisPluginOptions} from '@aedris/build-tools/dist/AedrisConfigHandler';
+import {AedrisPluginOptions} from '@aedris/build-tools';
 
 import {HMRPluginInstance} from './build';
 import {HMRPluginOptions} from './HMRPluginOptions';

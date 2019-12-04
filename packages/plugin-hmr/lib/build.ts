@@ -9,6 +9,10 @@ import {TargetRunner} from './TargetRunner';
 
 const HOOK_NAME = '@aedris/plugin-hmr';
 
+export {
+	HMRPluginOptions,
+};
+
 export interface HMRPluginInstance {
 	targetRunners: {[entryPointName: string]: TargetRunner};
 }
