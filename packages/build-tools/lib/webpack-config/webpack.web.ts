@@ -4,6 +4,11 @@ import {DefaultContext} from '..';
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
 	const {builder} = target;
 
+	// Support css
+	const cssRule = config.module.rule('css').test(/\.css$/);
+	cssRule.use('css-loader').loader('css-loader');
+	cssRule.use('style-loader').before('css-loader').loader('style-loader');
+
 	// Support different style processors out of the box
 	const lessRule = config.module.rule('less').test(/\.less$/);
 	lessRule.use('less-loader').loader('less-loader');
