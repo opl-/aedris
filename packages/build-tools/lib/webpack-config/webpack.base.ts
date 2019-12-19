@@ -104,7 +104,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	config.plugin('virtual-modules')
 		.use(WebpackVirtualModules, [target.virtualModules])
 		.init((Plugin, args) => {
-			const plugin = new Plugin(...args);
+			const plugin: WebpackVirtualModules = Plugin instanceof Function ? new (Plugin as any)(...args) : Plugin;
 
 			// Add a custom inspect stringifier to make `--printWebpack` output less spammy
 			(plugin as any)[util.inspect.custom] = function inspectVirtualModulesPlugin(depth: number, options: any) {
