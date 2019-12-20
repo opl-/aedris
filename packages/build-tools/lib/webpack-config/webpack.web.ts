@@ -4,20 +4,30 @@ import {DefaultContext} from '..';
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
 	const {builder} = target;
 
-	// Support css
-	const cssRule = config.module.rule('css').test(/\.css$/);
+	// TODO: using Rule.rules for all this relies on fixes that are currently not released for both webpack-chain (see https://github.com/neutrinojs/webpack-chain/pull/220) and vue-loader (see https://github.com/vuejs/vue-loader/pull/1618), so make sure the package.json minimum versions get updated to versions in which the fixes are released
+	// CSS support: uses a single rule for all style resources utilizing nested rules for better plugin compatibility
+	const stylesRule = config.module.rule('styles');
+	// Use `include` as webpack-chain doesn't support using `test` as a set and using both would require both `test` and `include` to pass. They're functionally the same anyway.
+	stylesRule.include.add(/\.css$/);
+
+	// Add the css and style loader as nested rules to allow easily changing the rules applied to CSS resources regardless of language processors (Stylus, etc) used
+	const cssRule = stylesRule.rule('css');
 	cssRule.use('css-loader').loader('css-loader');
-	cssRule.use('style-loader').before('css-loader').loader('style-loader');
+	cssRule.use('style-loader').loader('style-loader').before('css-loader');
 
-	// Support different style processors out of the box
-	const lessRule = config.module.rule('less').test(/\.less$/);
-	lessRule.use('less-loader').loader('less-loader');
+	function addStyleProcessor(name: string, test: RegExp, loader: string) {
+		// Make the styles rule catch modules for our loader
+		stylesRule.include.add(test);
 
-	const sassRule = config.module.rule('sass').test(/\.s[ac]ss$/);
-	sassRule.use('sass-loader').loader('sass-loader');
+		// Process the modules with the appropriate loader before using the normal CSS loaders
+		const rule = stylesRule.rule(name).test(test).after('css');
+		rule.use(loader).loader(loader);
+	}
 
-	const stylusRule = config.module.rule('stylus').test(/\.styl$/);
-	stylusRule.use('stylus-loader').loader('stylus-loader');
+	addStyleProcessor('less', /\.less$/, 'less-loader');
+	// TODO: sass doesn't resolve urls with webpack. see https://github.com/webpack-contrib/sass-loader#problems-with-url
+	addStyleProcessor('sass', /\.s[ac]ss$/, 'sass-loader');
+	addStyleProcessor('stylus', /\.styl(us)?$/, 'stylus-loader');
 
 	// There's no need to employ cache breakers and size warnings for SSR bundles.
 	if (!target.context.includes(DefaultContext.NODE)) {

@@ -22,7 +22,7 @@ export default <AedrisPlugin> {
 				config.plugin('vue-loader').use(VueLoaderPlugin);
 
 				// Vue requires using their fork of style loader
-				config.module.rule('css').use('style-loader').loader('vue-style-loader');
+				config.module.rule('styles').rule('css').use('style-loader').loader('vue-style-loader');
 
 				if (!target.config.isPlugin) {
 					// Use the SSR plugin to create a server bundle
