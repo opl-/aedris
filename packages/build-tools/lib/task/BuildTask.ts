@@ -20,18 +20,18 @@ export default class BuildTask extends Task<typeof BuildTask> {
 		builder: {
 			printConfig: {
 				description: 'Displays the final Aedris config and exits',
-				type: 'boolean' as 'boolean',
+				type: 'boolean',
 			},
 			printWebpack: {
 				description: 'Displays the final webpack config and exits',
-				type: 'boolean' as 'boolean',
+				type: 'boolean',
 			},
 			watch: {
-				type: 'boolean' as 'boolean',
+				type: 'boolean',
 				alias: ['w'],
 			},
 		},
-	};
+	} as const;
 
 	hooks = {
 		builderCreated: new AsyncSeriesHook<Builder, BuildTask>(['builder', 'buildTask']),
