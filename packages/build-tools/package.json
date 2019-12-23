@@ -40,7 +40,7 @@
     "ts-loader": "^6.0.4",
     "typescript": "~3.7.2",
     "webpack": "^4.39.1",
-    "webpack-chain": "^6.0.0",
+    "webpack-chain": "^6.3.0",
     "webpack-virtual-modules": "^0.1.12",
     "yargs": "^13.0.2"
   },
