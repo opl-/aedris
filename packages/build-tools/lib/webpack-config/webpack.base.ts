@@ -41,7 +41,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	});
 
 	// Allow resolving modules from:
-	config.resolveLoader.modules.merge([
+	const modulePaths = [
 		// The app itself
 		'node_modules',
 		// build-tools
@@ -51,7 +51,10 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 		// Registered plugins
 		// TODO: use find-up
 		...Object.values(builder.registeredPlugins).map((v) => path.join(v.absolutePath, '../../node_modules')),
-	]);
+	];
+
+	config.resolveLoader.modules.merge(modulePaths);
+	config.resolve.modules.merge(modulePaths);
 
 	// Replace any-promise with native Promise object. See https://github.com/kevinbeaty/any-promise/issues/28
 	externals['any-promise'] = {'any-promise': 'Promise'};
