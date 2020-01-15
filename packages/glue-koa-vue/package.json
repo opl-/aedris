@@ -1,0 +1,48 @@
+{
+  "name": "@aedris/framework",
+  "version": "0.1.0",
+  "description": "The Vue and Koa based web framework.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris#readme",
+  "license": "MIT",
+  "main": "dist/build.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "lint": "eslint --ext .js,.ts lib/ frontend/ backend/",
+    "build": "aedris build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "@aedris/plugin-hmr": "^0.1.0",
+    "@aedris/framework-koa": "^0.1.0",
+    "@aedris/framework-vue": "^0.1.0"
+  },
+  "devDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "@aedris/eslint-config-vue": "^1.0.0",
+    "@types/koa": "^2.0.52",
+    "@types/koa-compose": "^3.2.5",
+    "@types/koa-static": "^4.0.1",
+    "vue": "^2.6.10",
+    "vue-server-renderer": "^2.6.10",
+    "webpack-hot-middleware": "^2.25.0"
+  },
+  "peerDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "vue": "^2.6.10",
+    "vue-server-renderer": "^2.6.10"
+  }
+}

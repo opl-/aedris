@@ -1,0 +1,43 @@
+{
+  "name": "@aedris/framework-vue",
+  "version": "0.1.0",
+  "description": "Vue boilerplate for Aedris projects.",
+  "author": "opl- <opl-@users.noreply.github.com>",
+  "homepage": "https://github.com/opl-/aedris/packages/framework-vue#readme",
+  "license": "MIT",
+  "main": "dist/build.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opl-/aedris.git"
+  },
+  "scripts": {
+    "lint": "eslint --ext .js,.ts lib/",
+    "build": "aedris build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/opl-/aedris/issues"
+  },
+  "dependencies": {
+    "@aedris/plugin-hmr": "^0.1.0",
+    "@aedris/vue": "^0.1.0",
+    "tapable": "^1.1.3",
+    "vue-router": "^3.1.2"
+  },
+  "devDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "@aedris/eslint-config": "^1.0.0",
+    "vue": "^2.6.10"
+  },
+  "peerDependencies": {
+    "@aedris/build-tools": "^0.1.0",
+    "vue": "^2.6.10"
+  }
+}
