@@ -4,7 +4,6 @@ import {DefaultContext} from '..';
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
 	const {builder} = target;
 
-	// TODO: using Rule.rules for all this relies on fixes that are currently not released for ~~both webpack-chain (see https://github.com/neutrinojs/webpack-chain/pull/220) and~~ vue-loader (see https://github.com/vuejs/vue-loader/pull/1618), so make sure the package.json minimum versions get updated to versions in which the fixes are released
 	// CSS support: uses a single rule for all style resources utilizing nested rules for better plugin compatibility
 	const stylesRule = config.module.rule('styles');
 	// Use `include` as webpack-chain doesn't support using `test` as a set and using both would require both `test` and `include` to pass. They're functionally the same anyway.
