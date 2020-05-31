@@ -1,7 +1,6 @@
 export default function entryTemplate(plugins: string[]): string {
-	return `import RuntimePluginLoader from '@aedris/build-tools/dist/runtime/RuntimePluginLoader';
+	return `import loader from '@aedris/build-tools/dist/runtime/index';
 
-const loader = new RuntimePluginLoader();
 [
 	${plugins.map((m) => `[${JSON.stringify(m)}, import(${JSON.stringify(m)})]`).join(', ')}
 ].forEach((plugin) => loader.registerPlugin(plugin[0], plugin[1]));
