@@ -78,6 +78,9 @@ export default class Backend extends Koa {
 
 		const hotMiddlewareHandler = new WebpackHotMiddlewareHandler();
 
+		// If the frontend bundle is not yet built, create a building promise to wait for it before completing any frontend requests
+		if (!this.bundleRenderer) hotMiddlewareHandler.createBuildingPromise();
+
 		this.globalMiddleware.push(hotMiddlewareHandler.koaMiddleware);
 	}
 

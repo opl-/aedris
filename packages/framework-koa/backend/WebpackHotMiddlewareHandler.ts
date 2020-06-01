@@ -37,9 +37,6 @@ export class WebpackHotMiddlewareHandler {
 	private buildingPromiseResolve?: () => void;
 
 	constructor() {
-		// Initialize with a building promise to always wait on first build
-		this.createBuildingPromise();
-
 		this.wrappedKoaMiddleware = expressMiddlewareWrapper(this.hotMiddleware);
 
 		this.koaMiddleware = async (ctx, next) => {
