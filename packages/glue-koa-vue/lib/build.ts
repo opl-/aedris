@@ -16,7 +16,7 @@ function addHMRSupport(builder: Builder) {
 		propagating those events should even be the responsibility of the build tools? might also simplify parallel builds */
 
 		const target = b.getTarget('@aedris/framework-vue:app-frontend-client');
-		if (!target) throw new Error('"@aedris/framework-vue:app-frontend-client" target does not exist in afterLoad');
+		if (!target) throw new Error('"@aedris/framework-vue:app-frontend-client" target does not exist in beforeWatch');
 
 		target.compiler!.hooks.done.tap({
 			name: HOOK_NAME,
