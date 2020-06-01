@@ -75,21 +75,25 @@ export class TargetRunner {
 		}
 	}
 
-	async killProcess(entryPointName: string, timeout: number = 30000): Promise<void> {
+	killProcess(entryPointName: string, timeout: number = 30000): Promise<void> {
 		return new Promise((resolve) => {
+			let timeoutID: NodeJS.Timeout;
+
 			const proc = this.entryProcess[entryPointName];
-			if (!proc) return;
+			if (!proc) return void resolve();
 
 			this.log('Requesting process for entry %j to terminate', entryPointName);
 
-			proc.on('exit', () => {
-				this.log('Process for entry %j has exit', entryPointName);
+			proc.on('exit', (exitCode, exitSignal) => {
+				this.log('Process for entry %j has exit (code %j, signal %j)', entryPointName, exitCode, exitSignal);
+
+				if (timeoutID) clearTimeout(timeoutID);
 
 				resolve();
 			});
 
 			if (timeout !== -1) {
-				setTimeout(() => {
+				timeoutID = setTimeout(() => {
 					this.log('Kill timeout for entry %j exceeded', entryPointName);
 
 					proc.kill('SIGKILL');
