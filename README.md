@@ -8,7 +8,7 @@ Aedris aims to ease the process of starting new and updating old projects by tak
 This project uses a monorepo structure with the help of [Lerna](https://lerna.js.org). Here are commands you might need to:
 
 ```bash
-# Install dependencies
+# Install dependencies (hosting is enabled by default in lerna.json)
 lerna bootstrap --hoist
 
 # Build all packages
