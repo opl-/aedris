@@ -26,6 +26,10 @@ export default class Backend extends Koa {
 	/* Array of middleware executed for all API endpoints. */
 	readonly apiMiddleware: Middleware[] = [];
 
+	// TODO: do i like this name? i'm not sure i like this name.
+	/* Array of middleware executed when none of the backend middleware matches. This is primarily intended to be used for frontend. */
+	readonly fallbackMiddleware: Middleware[] = [];
+
 	/* Vue SSR bundle renderer. */
 	bundleRenderer: BundleRenderer;
 
@@ -43,10 +47,15 @@ export default class Backend extends Koa {
 
 		this.router.use('/_', this.backendRouter.callback());
 
+		this.router.use(compose(this.fallbackMiddleware));
+
+		// Mount the global router
+		this.use(this.router.callback());
+
 		// Set up SSR
 		this.createBundleRenderer();
 
-		this.router.use((ctx) => {
+		this.fallbackMiddleware.push((ctx) => {
 			if (process.env.NODE_ENV === 'development' && !this.bundleRenderer) {
 				// TODO: handle creating the bundle renderer more gracefully
 				this.createBundleRenderer();
@@ -64,9 +73,6 @@ export default class Backend extends Koa {
 			});
 		});
 
-		// Mount the global router
-		this.use(this.router.callback());
-
 		this.createHotMiddleware();
 	}
 
@@ -81,7 +87,7 @@ export default class Backend extends Koa {
 		// If the frontend bundle is not yet built, create a building promise to wait for it before completing any frontend requests
 		if (!this.bundleRenderer) hotMiddlewareHandler.createBuildingPromise();
 
-		this.globalMiddleware.push(hotMiddlewareHandler.koaMiddleware);
+		this.fallbackMiddleware.unshift(hotMiddlewareHandler.koaMiddleware);
 	}
 
 	createBundleRenderer() {
