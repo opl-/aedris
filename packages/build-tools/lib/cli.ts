@@ -7,6 +7,7 @@ import findUp from 'find-up';
 import path from 'path';
 import yargs, {Argv} from 'yargs';
 
+import {TaskError} from './task/TaskError';
 import ToolsManager from './ToolsManager';
 import buildLocalPlugins from './util/buildLocalPlugins';
 
@@ -68,10 +69,21 @@ function registerProjectPathOptions(y: Argv) {
 			async handler(taskArgv) {
 				console.log(`== Running task ${taskName}`);
 
-				await toolsManager.createTask(taskName, {
-					argv: taskArgv,
-					configPath,
-				}).run();
+				try {
+					await toolsManager.createTask(taskName, {
+						argv: taskArgv,
+						configPath,
+					}).run();
+				} catch (ex) {
+					// TODO: improve error handling and task result reporting (being able to return data from the task might be pretty useful when nesting tasks)
+					if (ex instanceof TaskError) {
+						console.log(`= Task failed: ${ex.message}`);
+					} else {
+						console.log('= Error running task:', ex);
+					}
+
+					process.exit(1);
+				}
 			},
 		});
 	});
