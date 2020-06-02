@@ -7,6 +7,7 @@ import yargs from 'yargs';
 
 import {Builder, DefaultContext} from '..';
 import Task from './Task';
+import {TaskError} from './TaskError';
 import buildLocalPlugins from '../util/buildLocalPlugins';
 
 const HOOK_NAME = '@aedris/build-tools:BuildTask';
@@ -78,8 +79,9 @@ export default class BuildTask extends Task<typeof BuildTask> {
 		if (this.argv.watch) {
 			await this.builder.watch();
 		} else {
-			// FIXME: process needs to exit with appropriate status code on failure
-			await this.builder.build();
+			const stats = await this.builder.build();
+
+			if (stats.hasErrors()) throw new TaskError('webpack build had errors');
 		}
 	}
 
