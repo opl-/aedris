@@ -59,7 +59,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		afterClean: new AsyncSeriesHook<Builder>(['builder']),
 		beforeWatch: new AsyncSeriesHook<Builder>(['builder']),
 		beforeBuild: new AsyncSeriesHook<Builder>(['builder']),
-		afterBuild: new AsyncSeriesHook<Builder>(['builder']),
+		afterBuild: new AsyncSeriesHook<Builder, webpack.Stats>(['builder', 'stats']),
 	};
 
 	constructor(opts: BuilderOptions) {
@@ -212,14 +212,16 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		await this.hooks.afterClean.promise(this);
 	}
 
-	async build(): Promise<void> {
+	async build(): Promise<webpack.Stats> {
 		await this.cleanOutputs();
 
 		await this.hooks.beforeBuild.promise(this);
 
-		await promisify(this.webpackCompiler.run.bind(this.webpackCompiler))();
+		const stats = await promisify(this.webpackCompiler.run.bind(this.webpackCompiler) as MultiCompiler['run'])();
 
-		await this.hooks.afterBuild.promise(this);
+		await this.hooks.afterBuild.promise(this, stats);
+
+		return stats;
 	}
 
 	async watch(): Promise<void> {
