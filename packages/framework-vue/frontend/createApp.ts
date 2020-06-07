@@ -7,6 +7,8 @@ import AppRoot from './component/AppRoot';
 import createRouter from './createRouter';
 import runtimePluginLoader from './runtimePluginLoader';
 
+const HOOK_NAME = '@aedris/framework-vue';
+
 export interface AppContext {
 	/** Path to render. `undefined` in a browser context. */
 	url?: string;
@@ -29,7 +31,7 @@ export class FrameworkApp implements RuntimePlugin {
 	constructor({context}: FrameworkAppOptions) {
 		this.context = context;
 
-		this.hooks.initRootOptions.tap('@aedris/framework', (vueOptions) => {
+		this.hooks.initRootOptions.tap(HOOK_NAME, (vueOptions) => {
 			// eslint-disable-next-line no-param-reassign
 			vueOptions.router = createRouter(this);
 			return vueOptions;
@@ -51,7 +53,7 @@ export default async function createApp(context: AppContext = {}): Promise<Frame
 		context,
 	});
 
-	await runtimePluginLoader.start('@aedris/framework', app);
+	await runtimePluginLoader.start(HOOK_NAME, app);
 
 	return app;
 }
