@@ -10,7 +10,7 @@ import externalsGenerator from '../util/externals';
 // TODO: add aliases
 
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
-	const {builder, config: aedrisConfig, externals} = target;
+	const {builder, config: aedrisConfig} = target;
 
 	config.mode(builder.isDevelopment ? 'development' : 'production');
 
@@ -57,21 +57,49 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	config.resolve.modules.merge(modulePaths);
 
 	// Replace any-promise with native Promise object. See https://github.com/kevinbeaty/any-promise/issues/28
-	externals['any-promise'] = {'any-promise': 'Promise'};
+	target.hooks.externalsQuery.tap('@aedris/build-tools:any-promise', (context) => {
+		if (context.request === 'any-promise') return 'Promise';
+		// eslint-disable-next-line consistent-return
+		return undefined;
+	});
 
 	// Don't include node dependencies in a node context
 	if (target.context.includes(DefaultContext.NODE)) {
-		externals['node-externals'] = externalsGenerator({
+		target.hooks.externalsQuery.tap({
+			name: '@aedris/build-tools:node-externals',
+			// As node externals are a very broad category, run them late
+			stage: 10000,
+		}, externalsGenerator({
 			// With the exception of files that need to be processed by webpack
 			whitelist: /^\.(css|less|s[ac]ss|styl)$/,
-		});
+		}));
 	}
 
 	// Resolve dynamic modules only when building an app
 	if (aedrisConfig.isPlugin) {
-		externals['dynamic-modules'] = function dynamicModules(context: string, request: string, callback: (err?: Error, result?: string) => void) {
-			callback(undefined, /^@aedris\/dynamic\/.+$/.test(request) ? `commonjs ${request}` : undefined);
-		};
+		// eslint-disable-next-line consistent-return
+		target.hooks.externalsQuery.tap('@aedris/build-tools:dynamic-modules', (query) => (/^@aedris\/dynamic\/.+$/.test(query.request) ? `commonjs ${query.request}` : undefined));
+	}
+
+	// Externalize the runtime index in order to prevent the global RuntimePluginLoader instance from leaking into other app packages when multiple run in the same node context.
+	// We should only externalize modules when running in a node context.
+	if (!aedrisConfig.isPlugin && target.context.includes(DefaultContext.NODE)) {
+		target.hooks.externalsQuery.tap({
+			name: '@aedris/build-tools:bundleSpecificRuntimePluginLoader',
+			// Run this hook early to reduce the chances of other hooks catching the module before us
+			stage: -1000,
+		}, (query) => {
+			// Force all modules required from the runtime index to be externalized when they should.
+			// Yes, the imports to externalize are listed here manually and need to be updated if any new imports are added. This shouldn't be an issue once externalsGenerator is fixed.
+			if (query.request === './RuntimePluginLoader' && query.context.endsWith('build-tools/dist/runtime')) {
+				return 'commonjs @aedris/build-tools/dist/runtime/RuntimePluginLoader';
+			}
+
+			if (/^@aedris\/build-tools\/dist\/runtime(?:\/index)?$/.test(query.request)) return false;
+
+			// eslint-disable-next-line consistent-return
+			return undefined;
+		});
 	}
 
 	// Rules for TypeScript files

@@ -1,4 +1,5 @@
-import {Configuration, ExternalsElement, Compiler} from 'webpack';
+import {AsyncSeriesBailHook} from 'tapable';
+import {Configuration, Compiler} from 'webpack';
 import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
@@ -24,7 +25,17 @@ export interface TargetOptions {
 	outputDir: string;
 }
 
+export interface ExternalsQuery {
+	context: string;
+	request: string;
+}
+
 export class BuildTarget {
+	hooks = {
+		/** Used as a replacement for the webpack externals config option as webpack-chain doesn't support it. See https://github.com/neutrinojs/webpack-chain/issues/222. */
+		externalsQuery: new AsyncSeriesBailHook<ExternalsQuery, undefined, undefined, string | false | undefined>(['query']),
+	};
+
 	name: string;
 
 	builder: Builder;
@@ -41,12 +52,6 @@ export class BuildTarget {
 
 	/** The entry points for this target, including the generated app entry point if applicable */
 	entry: {[entryName: string]: string[]};
-
-	/**
-	 * webpack externals to be used in this target. The key is used only for referencing the externals definition from other plugins and is not used in the final config. This property exists because
-	 * webpack-chain doesn't handle externals.
-	 * */
-	externals: {[externalsName: string]: ExternalsElement};
 
 	/** The output directory for this target, relative to the output directory specified in the config */
 	outputDir: string;
@@ -90,9 +95,6 @@ export class BuildTarget {
 		this.virtualModules = {};
 		this.virtualModulesPlugin = undefined;
 
-		// Reset externals object
-		this.externals = {};
-
 		if (!this.config.isPlugin) {
 			// Compute entry points to ensure they include the generated entry point for apps
 			this.entry = Object.entries(this.rawEntry).reduce((acc, [entryName, entryPluginNames]) => {
@@ -121,11 +123,17 @@ export class BuildTarget {
 		// Allow plugins to extend the generated config
 		configChain = this.builder.hooks.prepareWebpackConfig.call(configChain, this);
 
-		if (configChain.has('externals')) throw new Error('Use BuildTarget.externals for externals to allow manipulating them from other plugins');
+		if (configChain.has('externals')) throw new Error('Use BuildTarget.hooks.externalsQuery for externals to allow manipulating them from other plugins');
 
 		// Construct externals
-		const externalsArray = Object.values(this.externals);
-		configChain.set('externals', externalsArray);
+		configChain.set('externals', (context: string, request: string, callback: (err: any, result?: string | false) => void) => {
+			this.hooks.externalsQuery.promise({
+				context,
+				request,
+			}).then((result) => {
+				callback(undefined, result);
+			}).catch(callback);
+		});
 
 		// Finalize config
 		this.webpackConfig = configChain.toConfig();

@@ -97,15 +97,12 @@ export default <AedrisPlugin> {
 		});
 
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
-			// Override the build-tools externals function to never externalize our own entry bundles for dynamic module resolution. Kinda hacky but gets the job done.
-			const originalExternals = target.externals['node-externals'];
-			if (originalExternals) {
-				// eslint-disable-next-line no-param-reassign
-				target.externals['node-externals'] = (context: string, request: string, callback: (err?: Error, result?: string) => void) => {
-					if (/@aedris\/framework-koa\/dist\/backend/.test(request)) return callback(undefined, undefined);
-					return (originalExternals as Function)(context, request, callback);
-				};
-			}
+			// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
+			target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
+				if (query.request === '@aedris/framework-koa/dist/backend') return false;
+				// eslint-disable-next-line consistent-return
+				return undefined;
+			});
 
 			return config;
 		});
