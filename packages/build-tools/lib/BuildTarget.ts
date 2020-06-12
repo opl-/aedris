@@ -25,6 +25,14 @@ export interface TargetOptions {
 	outputDir: string;
 }
 
+export interface RuntimePluginEntry {
+	/** Path to the runtime plugin's entry point. */
+	entry: string;
+
+	/** Optional options to be passed to the runtime. */
+	options: any;
+}
+
 export interface ExternalsQuery {
 	context: string;
 	request: string;
@@ -52,6 +60,9 @@ export class BuildTarget {
 
 	/** The entry points for this target, including the generated app entry point if applicable */
 	entry: {[entryName: string]: string[]};
+
+	/** List of plugins to load at runtime. */
+	runtimePlugins: {[pluginName: string]: RuntimePluginEntry} = {};
 
 	/** The output directory for this target, relative to the output directory specified in the config */
 	outputDir: string;
@@ -149,14 +160,15 @@ export class BuildTarget {
 		});
 	}
 
-	generateEntry(): void {
-		// TODO: map plugins to load according to their exported entry points for different targets
-		// TODO: resolve.mainFields might actually do exactly what I want! https://webpack.js.org/configuration/resolve/#resolvemainfields + https://github.com/defunctzombie/package-browser-field-spec
-		// const loadPlugins = Object.keys(this.builder.registeredPlugins);
-		const loadPlugins: string[] = [];
+	registerRuntimePlugin(pluginName: string, entry: string, options?: any): void {
+		this.runtimePlugins[pluginName] = {
+			entry,
+			options,
+		};
+	}
 
-		// TODO: plugin hooks into the app should probably be per target...
-		this.writeVirtualModule('./node_modules/@aedris/entry/index.js', entryTemplate(loadPlugins));
+	generateEntry(): void {
+		this.writeVirtualModule('./node_modules/@aedris/entry/index.js', entryTemplate(this.runtimePlugins));
 	}
 
 	writeVirtualModule(path: string, module: string) {
