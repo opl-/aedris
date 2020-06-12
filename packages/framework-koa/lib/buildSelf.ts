@@ -10,7 +10,7 @@ export default <AedrisPlugin> {
 				name: `${HOOK_NAME}:backend`,
 				context: [DefaultContext.NODE],
 				entry: {
-					backend: path.resolve(b.config.rootDir, 'backend/index.ts'),
+					index: path.resolve(b.config.rootDir, 'backend/index.ts'),
 				},
 				outputDir: './',
 			}),

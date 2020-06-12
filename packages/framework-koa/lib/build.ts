@@ -89,7 +89,7 @@ export default <AedrisPlugin> {
 					name: TARGET_NAME.app.backend,
 					context: [DefaultContext.NODE],
 					entry: {
-						backend: '@aedris/framework-koa/dist/backend',
+						backend: '@aedris/framework-koa/dist/index',
 					},
 					outputDir: './backend/',
 				}),
@@ -99,7 +99,7 @@ export default <AedrisPlugin> {
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
 			target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
-				if (query.request === '@aedris/framework-koa/dist/backend') return false;
+				if (query.request === '@aedris/framework-koa/dist/index') return false;
 				// eslint-disable-next-line consistent-return
 				return undefined;
 			});
