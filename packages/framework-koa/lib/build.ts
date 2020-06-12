@@ -8,6 +8,7 @@ import {
 	DefaultContext,
 } from '@aedris/build-tools';
 import {HMRPluginOptions} from '@aedris/plugin-hmr';
+import {constants as fsConstants, promises as fs} from 'fs';
 import path from 'path';
 
 import {FrameworkKoaOptions} from './FrameworkKoaOptions';
@@ -26,6 +27,16 @@ const TARGET_NAME = {
 export {
 	TARGET_NAME,
 };
+
+async function isFileReadable(filePath: string): Promise<boolean> {
+	try {
+		await fs.access(filePath, fsConstants.R_OK);
+
+		return true;
+	} catch (ex) {
+		return false;
+	}
+}
 
 function addHMRSupport(builder: Builder) {
 	builder.usePlugin('@aedris/plugin-hmr');
@@ -65,41 +76,52 @@ export default <AedrisPlugin> {
 	hookBuild(builder: Builder): void {
 		addHMRSupport(builder);
 
-		builder.hooks.registerTargets.tapPromise(HOOK_NAME, (b) => {
+		builder.hooks.registerTargets.tapPromise(HOOK_NAME, async (b) => {
+			const options = b.getPluginOptions(HOOK_NAME);
+			const userEntryPath = path.resolve(options.backendDir, 'index.ts');
+
 			if (builder.config.isPlugin) {
 				// Create targets for plugins using standardized entry point paths for plugins
-				const options = b.getPluginOptions(HOOK_NAME);
-
-				return Promise.all([
-					b.createTarget({
-						name: TARGET_NAME.plugin.backend,
-						context: [DefaultContext.NODE],
-						entry: {
-							backend: path.resolve(options.backendDir, 'index.ts'),
-						},
-						outputDir: './backend/',
-					}),
-				]);
-			}
-
-			// Create targets for apps using our own entry points to allow skipping boilerplate code in projects
-			// TODO: this is going to skip all the project files and we don't want to skip those >.< (use generated entry)
-			return Promise.all([
-				b.createTarget({
-					name: TARGET_NAME.app.backend,
+				await b.createTarget({
+					name: TARGET_NAME.plugin.backend,
 					context: [DefaultContext.NODE],
 					entry: {
-						backend: '@aedris/framework-koa/dist/index',
+						backend: userEntryPath,
 					},
 					outputDir: './backend/',
-				}),
-			]);
+				});
+
+				return;
+			}
+
+			// Create targets for apps
+			const useBoilerplateEntry = !await isFileReadable(userEntryPath);
+
+			const target = await b.createTarget({
+				name: TARGET_NAME.app.backend,
+				context: [DefaultContext.NODE],
+				entry: {
+					// Use the boilerplate entry point if the user hasn't created an index file in their backend directory
+					backend: useBoilerplateEntry ? '@aedris/framework-koa/dist/entry' : userEntryPath,
+				},
+				outputDir: './backend/',
+			});
+
+			// When using the boilerplate entry, the plugin registers itself when calling `RuntimePluginLoader.start`. Otherwise, we need to register the runtime plugin manually
+			if (!useBoilerplateEntry) target.registerRuntimePlugin('@aedris/framework-koa', '@aedris/framework-koa/dist/index');
+		});
+
+		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (b) => {
+			const options = b.getPluginOptions(HOOK_NAME);
+
+			// TODO: config?
+			b.setDynamicModule(`${HOOK_NAME}:routes`, path.resolve(options.backendDir, 'route/index.ts'));
 		});
 
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
 			target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
-				if (query.request === '@aedris/framework-koa/dist/index') return false;
+				if (query.request === '@aedris/framework-koa/dist/entry') return false;
 				// eslint-disable-next-line consistent-return
 				return undefined;
 			});

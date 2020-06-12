@@ -1,8 +1,11 @@
 import Backend from './Backend';
+import {FrameworkKoaPlugin} from './FrameworkKoaPlugin';
 
-const app = new Backend();
+export {
+	Backend,
+	FrameworkKoaPlugin,
+};
 
-// TODO: config
-app.listen(8080);
-
-module.exports = app;
+export function createAedrisPlugin() {
+	return new FrameworkKoaPlugin();
+}

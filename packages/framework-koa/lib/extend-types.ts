@@ -1,5 +1,4 @@
-import {AedrisPluginOptions} from '@aedris/build-tools';
-
+import {FrameworkKoaPlugin} from '../backend/FrameworkKoaPlugin';
 import {FrameworkKoaOptions} from './FrameworkKoaOptions';
 
 declare module '@aedris/build-tools' {
@@ -13,5 +12,9 @@ declare module '@aedris/build-tools' {
 
 	interface BuildTarget {
 		getPluginOptions(plugin: '@aedris/framework-koa'): FrameworkKoaOptions;
+	}
+
+	interface RuntimePluginLoader {
+		getPlugin(plugin: '@aedris/framework-koa'): FrameworkKoaPlugin;
 	}
 }
