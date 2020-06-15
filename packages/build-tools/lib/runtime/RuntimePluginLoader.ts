@@ -9,7 +9,7 @@ export interface RuntimePlugin {
 	 * @param loader The loader instance for this app
 	 * @param options Runtime options defined by the build script when registering the plugin
 	 */
-	hookApp?(loader: RuntimePluginLoader, options: any): void;
+	hookApp?(loader: RuntimePluginLoader, options?: any): void;
 }
 
 export interface RegisteredRuntimePlugin {

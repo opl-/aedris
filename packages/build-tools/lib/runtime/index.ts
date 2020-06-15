@@ -5,12 +5,14 @@
  */
 // FIXME: remove above comment after `util/externals` is fixed
 
-import RuntimePluginLoader from './RuntimePluginLoader';
+import RuntimePluginLoader, {RegisteredRuntimePlugin, RuntimePlugin} from './RuntimePluginLoader';
 
 // Export a global RuntimePluginLoader instance for the whole app
 const loaderInstance = new RuntimePluginLoader();
 export default loaderInstance;
 
 export {
+	RegisteredRuntimePlugin,
+	RuntimePlugin,
 	RuntimePluginLoader,
 };
