@@ -1,11 +1,10 @@
-import {RuntimePlugin} from '@aedris/build-tools/dist/RuntimePluginLoader';
+import loader, {RuntimePlugin} from '@aedris/build-tools/dist/runtime';
 import {SyncHook, SyncWaterfallHook} from 'tapable';
 import Vue, {ComponentOptions} from 'vue';
 import {RouterOptions} from 'vue-router';
 
 import AppRoot from './component/AppRoot';
 import createRouter from './createRouter';
-import runtimePluginLoader from './runtimePluginLoader';
 
 const HOOK_NAME = '@aedris/framework-vue';
 
@@ -53,7 +52,7 @@ export default async function createApp(context: AppContext = {}): Promise<Frame
 		context,
 	});
 
-	await runtimePluginLoader.start(HOOK_NAME, app);
+	await loader.start(HOOK_NAME, app);
 
 	return app;
 }
