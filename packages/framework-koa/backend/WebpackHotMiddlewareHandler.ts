@@ -7,10 +7,10 @@ import WebpackHotMiddleware from 'webpack-hot-middleware';
 import expressMiddlewareWrapper from './util/expressMiddlewareWrapper';
 
 type IPCMessage = {
-	t: '@aedris/framework:compiler:done',
+	t: '@aedris/glue-koa-vue:compiler:done',
 	d: any[],
 } | {
-	t: '@aedris/framework:compiler:invalid',
+	t: '@aedris/glue-koa-vue:compiler:invalid',
 };
 
 /**
@@ -67,11 +67,11 @@ export class WebpackHotMiddlewareHandler {
 	}
 
 	onMessage(msg: IPCMessage) {
-		if (msg.t === '@aedris/framework:compiler:done') {
+		if (msg.t === '@aedris/glue-koa-vue:compiler:done') {
 			this.hooks.done.promise({
 				toJson: () => msg.d[0],
 			});
-		} else if (msg.t === '@aedris/framework:compiler:invalid') {
+		} else if (msg.t === '@aedris/glue-koa-vue:compiler:invalid') {
 			this.hooks.invalid.call();
 		}
 	}

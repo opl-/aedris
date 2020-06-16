@@ -1,7 +1,7 @@
 {
-  "name": "@aedris/framework",
+  "name": "@aedris/glue-koa-vue",
   "version": "0.1.0",
-  "description": "The Vue and Koa based web framework.",
+  "description": "Package integrating the Vue and Koa parts of the framework.",
   "author": "opl- <opl-@users.noreply.github.com>",
   "homepage": "https://github.com/opl-/aedris#readme",
   "license": "MIT",

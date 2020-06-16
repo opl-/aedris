@@ -3,7 +3,7 @@ import {HMRPluginInstance} from '@aedris/plugin-hmr';
 
 // TODO: https://vue-loader.vuejs.org/options.html has some interesting options like cacheDirectory
 
-const HOOK_NAME = '@aedris/framework';
+const HOOK_NAME = '@aedris/glue-koa-vue';
 
 // TODO: vue SSR for koa needs to be handled by this package after koa framework can properly expose an api
 
@@ -27,7 +27,7 @@ function addHMRSupport(builder: Builder) {
 			if (!hmrPlugin.targetRunners['@aedris/framework-koa:app-backend']?.entryProcess.backend) return;
 
 			hmrPlugin.targetRunners['@aedris/framework-koa:app-backend'].entryProcess.backend.send({
-				t: '@aedris/framework:compiler:done',
+				t: `${HOOK_NAME}:compiler:done`,
 				d: [
 					// See https://github.com/webpack-contrib/webpack-hot-middleware/blob/cb29abb9dde435a1ac8e9b19f82d7d36b1093198/middleware.js#L118
 					stats.toJson({
@@ -48,7 +48,7 @@ function addHMRSupport(builder: Builder) {
 			if (!hmrPlugin.targetRunners['@aedris/framework-koa:app-backend']?.entryProcess.backend) return;
 
 			hmrPlugin.targetRunners['@aedris/framework-koa:app-backend'].entryProcess.backend.send({
-				t: '@aedris/framework:compiler:invalid',
+				t: `${HOOK_NAME}:compiler:invalid`,
 			});
 		});
 	});
