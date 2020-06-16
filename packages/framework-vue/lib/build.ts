@@ -76,7 +76,7 @@ export default <AedrisPlugin> {
 						name: TARGET_NAME.plugin.frontend,
 						context: [DefaultContext.WEB, 'vue', DefaultContext.NODE],
 						entry: {
-							frontend: path.resolve(options.frontendDir, 'index.ts'),
+							index: path.resolve(options.frontendDir, 'index.ts'),
 						},
 						outputDir: './frontend/',
 					}),

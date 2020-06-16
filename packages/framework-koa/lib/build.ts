@@ -86,7 +86,7 @@ export default <AedrisPlugin> {
 					name: TARGET_NAME.plugin.backend,
 					context: [DefaultContext.NODE],
 					entry: {
-						backend: userEntryPath,
+						index: userEntryPath,
 					},
 					outputDir: './backend/',
 				});
