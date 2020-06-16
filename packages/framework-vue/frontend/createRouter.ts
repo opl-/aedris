@@ -12,7 +12,7 @@ export default function createRouter(frameworkApp: FrameworkApp): Router {
 	};
 
 	// Try to get the default app config from the app itself
-	// eslint-disable-next-line global-require, import/no-unresolved
+	// eslint-disable-next-line global-require
 	const dynamicRouter = importDefault(require('@aedris/dynamic/@aedris/framework-vue:router'));
 
 	if (dynamicRouter) {

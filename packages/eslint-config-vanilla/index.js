@@ -17,6 +17,13 @@ module.exports = {
 			ts: 'never',
 		}],
 
+		// Aedris uses webpack aliases mixed with externals to allow dependencies to use modules from the app.
+		'import/no-unresolved': ['error', {
+			commonjs: true,
+			caseSensitive: true,
+			ignore: ['^@aedris/dynamic/.'],
+		}],
+
 		// Spaces in anonymous functions are a no.
 		'space-before-function-paren': ['error', {
 			anonymous: 'never',

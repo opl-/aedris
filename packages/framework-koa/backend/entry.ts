@@ -11,7 +11,6 @@ plugin.hooks.afterLoad.tap('@aedris/framework-koa', () => {
 
 // When running as an entry point we use a dynamic module to run the user code
 // FIXME: this throws an error if the module doesn't exist
-// eslint-disable-next-line import/no-unresolved
 const userRouter = require('@aedris/dynamic/@aedris/framework-koa:routes');
 
 if (userRouter && typeof userRouter.registerRoutes === 'function') userRouter.registerRoutes(plugin.app);
