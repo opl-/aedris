@@ -1,10 +1,7 @@
+import {expressMiddlewareWrapper} from '@aedris/framework-koa/dist/index';
 import {Middleware} from 'koa';
 import {AsyncSeriesHook, SyncHook} from 'tapable';
-// Development only dependency
-// eslint-disable-next-line import/no-extraneous-dependencies
 import WebpackHotMiddleware from 'webpack-hot-middleware';
-
-import expressMiddlewareWrapper from './util/expressMiddlewareWrapper';
 
 type IPCMessage = {
 	t: '@aedris/glue-koa-vue:compiler:done',
@@ -46,11 +43,11 @@ export class WebpackHotMiddlewareHandler {
 
 		// Add taps to handle request delaying
 		this.hooks.done.tap({
-			name: '@aedris/framework',
+			name: '@aedris/glue-koa-vue',
 			stage: 10000,
 		}, this.resolveBuildingPromise.bind(this));
 		this.hooks.invalid.tap({
-			name: '@aedris/framework',
+			name: '@aedris/glue-koa-vue',
 			stage: -10000,
 		}, this.createBuildingPromise.bind(this));
 

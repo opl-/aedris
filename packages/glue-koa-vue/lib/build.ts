@@ -5,8 +5,6 @@ import {HMRPluginInstance} from '@aedris/plugin-hmr';
 
 const HOOK_NAME = '@aedris/glue-koa-vue';
 
-// TODO: vue SSR for koa needs to be handled by this package after koa framework can properly expose an api
-
 function addHMRSupport(builder: Builder) {
 	// Forward some of the webpack hooks to the backend, so the hot-middleware can work
 	builder.hooks.beforeWatch.tap(HOOK_NAME, (b) => {
@@ -58,6 +56,15 @@ export default <AedrisPlugin> {
 	hookBuild(builder: Builder): void {
 		builder.usePlugin('@aedris/framework-koa');
 		builder.usePlugin('@aedris/framework-vue');
+
+		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
+			// Register ourselves as a runtime plugin when building the app
+			if (!target.config.isPlugin && target.name === '@aedris/framework-koa:app-backend') {
+				target.registerRuntimePlugin(HOOK_NAME, `${HOOK_NAME}/dist/backend`);
+			}
+
+			return config;
+		});
 
 		addHMRSupport(builder);
 	},
