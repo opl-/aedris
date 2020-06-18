@@ -36,7 +36,7 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	config.resolve.extensions.merge(['.wasm', '.mjs', '.js', '.ts', '.json']);
 
 	// Dynamic modules support
-	Object.entries(builder.dynamicAppModules).forEach(([dynamicModuleName, dynamicModulePath]) => {
+	Object.entries(target.dynamicAppModules).forEach(([dynamicModuleName, dynamicModulePath]) => {
 		config.resolve.alias.set(`@aedris/dynamic/${dynamicModuleName}$`, dynamicModulePath);
 	});
 

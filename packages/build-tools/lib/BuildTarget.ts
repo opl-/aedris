@@ -1,3 +1,4 @@
+import debug from 'debug';
 import {AsyncSeriesBailHook} from 'tapable';
 import {Configuration, Compiler} from 'webpack';
 import ChainConfig from 'webpack-chain';
@@ -46,6 +47,9 @@ export class BuildTarget {
 
 	name: string;
 
+	/** Debug logger for this BuildTarget instance. */
+	log: debug.Debugger;
+
 	builder: Builder;
 
 	/** Map of virtual modules that will exist for this target. */
@@ -54,6 +58,9 @@ export class BuildTarget {
 
 	/** Contexts used for building this target */
 	context: string[];
+
+	/** List of paths to modules that can have a varying path in the project. */
+	dynamicAppModules: {[moduleName: string]: string} = {};
 
 	/** The unprocessed entry points for this target */
 	rawEntry: {[entryName: string]: string[]};
@@ -77,6 +84,7 @@ export class BuildTarget {
 		this.builder = owner;
 
 		this.name = opts.name;
+		this.log = debug(`aedris:build-tools:BuildTarget[${JSON.stringify(this.name)}]`);
 		this.context = opts.context;
 		this.rawEntry = Object.entries(opts.entry).reduce((acc, [name, value]) => {
 			acc[name] = (Array.isArray(value) ? value : [value]);
@@ -160,11 +168,29 @@ export class BuildTarget {
 		});
 	}
 
+	async registerDynamicModules(): Promise<void> {
+		this.dynamicAppModules = {};
+
+		this.log('Registering dynamic modules for target %j', this.name);
+
+		await this.builder.hooks.registerDynamicModules.promise(this);
+
+		this.log('Registered %i dynamic modules', Object.keys(this.dynamicAppModules).length);
+	}
+
+	setDynamicModule(dynamicModuleName: string, modulePath: string) {
+		this.dynamicAppModules[dynamicModuleName] = modulePath;
+
+		this.log('Set dynamic module %j to %j', dynamicModuleName, modulePath);
+	}
+
 	registerRuntimePlugin(pluginName: string, entry: string, options?: any): void {
 		this.runtimePlugins[pluginName] = {
 			entry,
 			options,
 		};
+
+		this.log('Registered runtime plugin %j with entry point %j', pluginName, entry);
 	}
 
 	generateEntry(): void {

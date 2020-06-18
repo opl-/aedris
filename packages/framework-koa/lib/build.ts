@@ -111,11 +111,11 @@ export default <AedrisPlugin> {
 			if (!useBoilerplateEntry) target.registerRuntimePlugin('@aedris/framework-koa', '@aedris/framework-koa/dist/index');
 		});
 
-		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (b) => {
-			const options = b.getPluginOptions(HOOK_NAME);
+		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (target) => {
+			const options = target.getPluginOptions(HOOK_NAME);
 
 			// TODO: config?
-			b.setDynamicModule(`${HOOK_NAME}:routes`, path.resolve(options.backendDir, 'route/index.ts'));
+			target.setDynamicModule(`${HOOK_NAME}:routes`, path.resolve(options.backendDir, 'route/index.ts'));
 		});
 
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {

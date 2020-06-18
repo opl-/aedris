@@ -104,11 +104,11 @@ export default <AedrisPlugin> {
 			]);
 		});
 
-		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (b) => {
-			const options = b.getPluginOptions(HOOK_NAME);
+		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (target) => {
+			const options = target.getPluginOptions(HOOK_NAME);
 
 			// TODO: config
-			b.setDynamicModule(`${HOOK_NAME}:router`, path.resolve(options.frontendDir, 'router/'));
+			target.setDynamicModule(`${HOOK_NAME}:router`, path.resolve(options.frontendDir, 'router/'));
 		});
 
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {

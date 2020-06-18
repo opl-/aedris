@@ -37,9 +37,6 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 	configHandler: AedrisConfigHandler;
 
-	/** List of paths to modules that can have a varying path in the project. */
-	dynamicAppModules: {[moduleName: string]: string} = {};
-
 	webpackCompiler: MultiCompiler;
 	webpackWatcher: MultiWatching;
 
@@ -51,7 +48,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		afterConfig: new AsyncSeriesHook<Builder>(['builder']),
 		registerContexts: new SyncHook<Builder>(['builder']),
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
-		registerDynamicModules: new AsyncParallelHook<Builder>(['builder']),
+		registerDynamicModules: new AsyncParallelHook<BuildTarget>(['buildTarget']),
 		prepareWebpackConfig: new SyncWaterfallHook<ChainConfig, BuildTarget>(['webpackConfig', 'target']),
 		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
@@ -99,8 +96,6 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		await this.hooks.afterConfig.promise(this);
 
 		this.hooks.registerContexts.call(this);
-
-		await this.registerDynamicModules();
 
 		log('Creating targets');
 
@@ -152,25 +147,10 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		if (plugin && typeof plugin.hookBuild === 'function') return plugin.hookBuild(this);
 	}
 
-	async registerDynamicModules() {
-		this.dynamicAppModules = {};
-
-		log('Registering dynamic modules');
-
-		await this.hooks.registerDynamicModules.promise(this);
-
-		log('Registered %i dynamic modules', Object.keys(this.dynamicAppModules).length);
-	}
-
-	setDynamicModule(dynamicModuleName: string, modulePath: string) {
-		this.dynamicAppModules[dynamicModuleName] = modulePath;
-	}
-
 	getTarget(targetName: string): BuildTarget | null {
 		return this.targets.find((t) => t.name === targetName) || null;
 	}
 
-	// TODO: why is this async?
 	async createTarget(opts: TargetOptions): Promise<BuildTarget> {
 		log('Creating target %j with context %j', opts.name, opts.context);
 
@@ -178,6 +158,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 		const target = new BuildTarget(this, opts);
 
+		await target.registerDynamicModules();
 		target.createConfig();
 
 		this.targets.push(target);
