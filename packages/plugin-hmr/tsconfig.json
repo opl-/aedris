@@ -13,8 +13,7 @@
 		"moduleResolution": "node"
 	},
 	"include": [
-		"lib/**/*",
-		"lib/extend-types.ts"
+		"lib/**/*"
 	],
 	"exclude": [
 		"node_modules"

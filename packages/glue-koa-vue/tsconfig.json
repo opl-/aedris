@@ -13,9 +13,7 @@
 		"moduleResolution": "node"
 	},
 	"include": [
-		"lib/**/*.ts",
-		"lib/buildSelf.ts",
-		"lib/extend-types.ts"
+		"lib/**/*.ts"
 	],
 	"exclude": [
 		"node_modules"
