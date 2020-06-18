@@ -1,5 +1,5 @@
 // Type extensions
-import './extend-types';
+import './extend-build-types';
 
 import {
 	AedrisConfigHandler,

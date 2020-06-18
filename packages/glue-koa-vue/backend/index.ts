@@ -1,3 +1,5 @@
+import './extend-runtime-types';
+
 import {GlueKoaVuePlugin} from './GlueKoaVuePlugin';
 
 export {

@@ -1,5 +1,3 @@
-import {AedrisPluginOptions} from '@aedris/build-tools';
-
 import {FrameworkVueOptions} from './FrameworkVueOptions';
 
 declare module '@aedris/build-tools' {

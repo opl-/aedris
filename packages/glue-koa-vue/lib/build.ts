@@ -1,5 +1,7 @@
+/// <reference types="@aedris/framework-koa/dist/extend-build-types" />
+/// <reference types="@aedris/plugin-hmr/dist/extend-build-types" />
+
 import {AedrisPlugin, Builder} from '@aedris/build-tools';
-import {HMRPluginInstance} from '@aedris/plugin-hmr';
 
 // TODO: https://vue-loader.vuejs.org/options.html has some interesting options like cacheDirectory
 
@@ -20,7 +22,7 @@ function addHMRSupport(builder: Builder) {
 			name: HOOK_NAME,
 			stage: 100,
 		}, (stats) => {
-			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr') as HMRPluginInstance;
+			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr');
 
 			if (!hmrPlugin.targetRunners['@aedris/framework-koa:app-backend']?.entryProcess.backend) return;
 
@@ -41,7 +43,7 @@ function addHMRSupport(builder: Builder) {
 		});
 
 		target.compiler!.hooks.invalid.tap(HOOK_NAME, () => {
-			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr') as HMRPluginInstance;
+			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr');
 
 			if (!hmrPlugin.targetRunners['@aedris/framework-koa:app-backend']?.entryProcess.backend) return;
 

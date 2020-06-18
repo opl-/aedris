@@ -1,4 +1,4 @@
-import RuntimePluginLoader, {RuntimePlugin} from '@aedris/build-tools/dist/runtime/RuntimePluginLoader';
+import {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
 import {AsyncParallelHook} from 'tapable';
 
 import Backend from './Backend';

@@ -1,4 +1,4 @@
-import RuntimePluginLoader, {RuntimePlugin} from '@aedris/build-tools/dist/runtime/RuntimePluginLoader';
+import {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
 import {FrameworkKoaPlugin} from '@aedris/framework-koa/dist/index';
 import fs from 'fs';
 import path from 'path';
@@ -18,7 +18,7 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 	bundleRenderer: BundleRenderer;
 
 	hookApp(loader: RuntimePluginLoader) {
-		this.koaFramework = loader.getPlugin('@aedris/framework-koa') as FrameworkKoaPlugin;
+		this.koaFramework = loader.getPlugin('@aedris/framework-koa');
 
 		this.koaFramework.hooks.registerRoutes.tapPromise(HOOK_NAME, async () => {
 			// Set up SSR

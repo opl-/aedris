@@ -1,3 +1,5 @@
+import './extend-runtime-types';
+
 import loader, {RuntimePlugin} from '@aedris/build-tools/dist/runtime';
 import {SyncHook, SyncWaterfallHook} from 'tapable';
 import Vue, {ComponentOptions} from 'vue';

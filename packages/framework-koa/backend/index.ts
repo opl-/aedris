@@ -1,3 +1,5 @@
+import './extend-runtime-types';
+
 import Backend from './Backend';
 import {FrameworkKoaPlugin} from './FrameworkKoaPlugin';
 import expressMiddlewareWrapper from './util/expressMiddlewareWrapper';
