@@ -40,7 +40,7 @@ export default async function buildLocalPlugins(config: AedrisPluginConfig) {
 			}),
 		});
 
-		localPluginBuilder.hooks.registerTargets.tap(HOOK_NAME, (lpb) => Promise.all(localPluginPaths.map(
+		localPluginBuilder.hooks.registerTargets.tapPromise(HOOK_NAME, (lpb) => Promise.all(localPluginPaths.map(
 			(pluginPath) => lpb.createTarget({
 				name: `@aedris/build-tools:BuildTask:${pluginPath}`,
 				context: [DefaultContext.NODE],
