@@ -30,7 +30,6 @@
     "node": ">=12.11"
   },
   "dependencies": {
-    "@types/webpack-virtual-modules": "^0.1.0",
     "css-loader": "^3.2.1",
     "debug": "^4.1.1",
     "find-up": "^4.1.0",
@@ -38,7 +37,6 @@
     "source-map-support": "^0.5.13",
     "tapable": "^1.1.3",
     "ts-loader": "^6.0.4",
-    "typescript": "~3.7.2",
     "webpack": "^4.39.1",
     "webpack-chain": "^6.3.0",
     "webpack-virtual-modules": "^0.1.12",
@@ -51,6 +49,11 @@
     "@types/node": "12.11.7",
     "@types/tapable": "^1.0.4",
     "@types/webpack": "^4.39.1",
-    "@types/yargs": "^13.0.2"
+    "@types/webpack-virtual-modules": "^0.1.0",
+    "@types/yargs": "^13.0.2",
+    "typescript": "~3.7.2"
+  },
+  "peerDependencies": {
+    "typescript": "^3.7.2"
   }
 }
