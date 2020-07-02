@@ -11,7 +11,7 @@ module.exports = {
 	},
 	// Custom rules because airbnb is not perfect.
 	rules: {
-		// Don't require extensions when importing.
+		// Don't require extensions when importing .ts files.
 		'import/extensions': ['error', 'always', {
 			js: 'never',
 			ts: 'never',
@@ -34,7 +34,7 @@ module.exports = {
 		// var++ syntax is just fine. Why disable it?
 		'no-plusplus': 'off',
 
-		// Nested ternaries are often be more readable than a chain of ifs.
+		// Nested ternaries can often be more readable than a chain of ifs.
 		'no-nested-ternary': 'off',
 
 		// Tabs allow different users to use different indentation levels without changing the files.
