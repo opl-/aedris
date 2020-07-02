@@ -18,7 +18,7 @@
     "url": "git+https://github.com/opl-/aedris.git"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.ts lib/ frontend/ backend/",
+    "lint": "eslint --ext .js,.ts lib/ backend/",
     "build": "aedris build",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
