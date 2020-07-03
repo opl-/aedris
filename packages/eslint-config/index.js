@@ -1,3 +1,6 @@
+const airbnbTypeScriptBase = require('eslint-config-airbnb-typescript/lib/shared');
+const aedrisVanilla = require('@aedris/eslint-config-vanilla');
+
 module.exports = {
 	extends: [
 		// Use the vanilla config as a base
@@ -11,75 +14,36 @@ module.exports = {
 		// 'plugin:@typescript-eslint/recommended',
 	],
 	parser: '@typescript-eslint/parser',
+	parserOptions: {
+		project: ['./tsconfig.json'],
+	},
 	plugins: [
 		'@typescript-eslint',
 	],
 	rules: {
+		// == TYPESCRIPT-ESLINT REPLACEMENTS
+		// The eslint-config-airbnb-typescript package provides Airbnb compliant replacements of the default ESLint rules with their ESLint TypeScript plugin replacements.
+		...airbnbTypeScriptBase.rules,
+
 		// == INDENTATION
 		// Tabs allow different users to use different indentation levels without changing the files.
-		'@typescript-eslint/indent': ['error', 'tab'],
+		'@typescript-eslint/indent': aedrisVanilla.rules.indent,
 
-		// == TYPESCRIPT-ESLINT REPLACEMENTS
-		// Use the TypeScript specific rules (values copied from airbnb-base unless specified otherwise)
-		semi: 'off',
-		'@typescript-eslint/semi': ['error', 'always'],
+		// == AEDRIS TWEAKS
+		// Spaces in anonymous functions are a no.
+		'@typescript-eslint/space-before-function-paren': aedrisVanilla.rules['space-before-function-paren'],
 
-		'no-unused-vars': 'off',
-		'@typescript-eslint/no-unused-vars': ['error', {
-			vars: 'all',
-			args: 'after-used',
-			ignoreRestSiblings: true,
-		}],
+		// Allowing no empty lines is useful for props.
+		'@typescript-eslint/lines-between-class-members': aedrisVanilla.rules['lines-between-class-members'],
 
-		camelcase: 'off',
-		'@typescript-eslint/camelcase': ['error', {
-			properties: 'never',
-			ignoreDestructuring: false,
-		}],
-
-		'no-array-constructor': 'off',
-		'@typescript-eslint/no-array-constructor': 'error',
-
-		'no-use-before-define': 'off',
-		'@typescript-eslint/no-use-before-define': ['error', {
-			functions: true,
-			classes: true,
-			variables: true,
-			typedefs: true,
-		}],
-
-		// Disabled by default in airbnb-base (see https://github.com/airbnb/javascript/issues/869)
-		// 'func-call-spacing': 'off',
-
-		// Disabled by default in airbnb-base
-		// 'no-magic-numbers': 'off',
-
-		'no-useless-constructor': 'off',
-		'@typescript-eslint/no-useless-constructor': 'error',
-
-		'quotes': 'off',
-		'@typescript-eslint/quotes': ['error', 'single', {
-			avoidEscape: true,
-		}],
-
-		'brace-style': 'off',
-		'@typescript-eslint/brace-style': ['error', '1tbs', {
-			allowSingleLine: true,
-		}],
-
-		// Aedris: Spaces in anonymous functions are a no.
-		'space-before-function-paren': 'off',
-		'@typescript-eslint/space-before-function-paren': ['error', {
-			anonymous: 'never',
-			named: 'never',
-			asyncArrow: 'always',
-		}],
-
-		// OTHERS
 		// Import plugin isn't aware of type only imports, resulting in those being marked as error despite not causing any issues. (see https://github.com/typescript-eslint/typescript-eslint/issues/986)
 		'import/no-cycle': 'off',
 
 		// Don't require default exports, because classes
 		'import/prefer-default-export': 'off',
 	},
+	overrides: [
+		// The eslint-config-airbnb-typescript package provides some fixes for .ts files using overrides.
+		...airbnbTypeScriptBase.overrides,
+	],
 };
