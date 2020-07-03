@@ -1,6 +1,7 @@
 import {ExternalsQuery} from '../BuildTarget';
 
-const moduleNameTest = /^(?:@[a-z0-9\-_]+?\/)?[a-z0-9\-_]+(?=$|\/)/;
+// Adapted from https://github.com/nodejs/node/blob/7e5d5c28ad4b2578b945854894195c49470df82a/lib/internal/modules/cjs/loader.js#L497
+const moduleNameTest = /^(?:@[^/\\%]+?\/)?[^./\\%][^/\\%]*(?=$|\/)/;
 
 // TODO: this might include files included from externals using relative paths
 
