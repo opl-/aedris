@@ -51,9 +51,9 @@
     "@types/webpack": "^4.39.1",
     "@types/webpack-virtual-modules": "^0.1.0",
     "@types/yargs": "^13.0.2",
-    "typescript": "~3.7.2"
+    "typescript": "~3.9.6"
   },
   "peerDependencies": {
-    "typescript": "^3.7.2"
+    "typescript": "^3.9.6"
   }
 }
