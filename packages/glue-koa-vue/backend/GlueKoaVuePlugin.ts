@@ -90,6 +90,9 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 		// If the frontend bundle is not yet built, create a building promise to wait for it before completing any frontend requests
 		if (!this.bundleRenderer) hotMiddlewareHandler.createBuildingPromise();
 
+		// Reload the server bundle whenever a new one is built
+		hotMiddlewareHandler.hooks.done.for('@aedris/framework-vue:app-frontend-server').tap(HOOK_NAME, () => this.createBundleRenderer());
+
 		this.koaFramework.app.fallbackMiddleware.unshift(hotMiddlewareHandler.koaMiddleware);
 	}
 }
