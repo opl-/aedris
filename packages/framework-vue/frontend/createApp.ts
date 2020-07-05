@@ -1,6 +1,6 @@
 import './extend-runtime-types';
 
-import loader, {RuntimePlugin} from '@aedris/build-tools/dist/runtime';
+import loader, {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
 import {SyncHook, SyncWaterfallHook} from 'tapable';
 import Vue, {ComponentOptions} from 'vue';
 import {RouterOptions} from 'vue-router';
@@ -39,12 +39,14 @@ export class FrameworkApp implements RuntimePlugin {
 		});
 	}
 
-	hookApp() {
-		const vueOptions = this.hooks.initRootOptions.call({} as ComponentOptions<Vue>, this);
+	hookApp(l: RuntimePluginLoader) {
+		l.hooks.init.tap(HOOK_NAME, () => {
+			const vueOptions = this.hooks.initRootOptions.call({} as ComponentOptions<Vue>, this);
 
-		this.root = new AppRoot(vueOptions);
+			this.root = new AppRoot(vueOptions);
 
-		this.hooks.rootCreated.call(this);
+			this.hooks.rootCreated.call(this);
+		});
 	}
 }
 
