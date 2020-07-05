@@ -61,7 +61,7 @@ module.exports = {
 		// Sometimes it's better to rely on the editor's code wrapping functionality.
 		'max-len': ['error', 200, 4, {
 			ignoreUrls: true,
-			ignoreComments: false,
+			ignoreComments: true,
 			ignoreRegExpLiterals: true,
 			ignoreStrings: true,
 			ignoreTemplateLiterals: true,
