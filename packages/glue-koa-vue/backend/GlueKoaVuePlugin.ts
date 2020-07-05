@@ -1,7 +1,9 @@
 import {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
 import {FrameworkKoaPlugin} from '@aedris/framework-koa/dist/index';
 import fs from 'fs';
+import {Context} from 'koa';
 import path from 'path';
+import {AsyncSeriesWaterfallHook} from 'tapable';
 import {createBundleRenderer, BundleRenderer} from 'vue-server-renderer';
 
 import htmlTemplate from './htmlTemplate';
@@ -11,6 +13,10 @@ const HOOK_NAME = '@aedris/glue-koa-vue';
 const APP_ROOT = process.env.AEDRIS_DIR || process.cwd();
 
 export class GlueKoaVuePlugin implements RuntimePlugin {
+	hooks = {
+		createRenderContext: new AsyncSeriesWaterfallHook<object, Context>(['renderContext', 'koaContext']),
+	};
+
 	/** The Koa framework instance. */
 	koaFramework: FrameworkKoaPlugin;
 
@@ -52,7 +58,7 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 	}
 
 	async createSSRMiddleware() {
-		this.koaFramework.app.fallbackMiddleware.push((ctx) => {
+		this.koaFramework.app.fallbackMiddleware.push(async (ctx) => {
 			if (process.env.NODE_ENV === 'development' && !this.bundleRenderer) {
 				// TODO: handle creating the bundle renderer more gracefully
 				this.createBundleRenderer();
@@ -63,11 +69,13 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 				}
 			}
 
-			ctx.type = 'html';
-			ctx.response.body = this.bundleRenderer.renderToStream({
+			const renderContext = await this.hooks.createRenderContext.promise({
 				url: ctx.path,
 				meta: '<title>test</title>',
-			});
+			}, ctx);
+
+			ctx.type = 'html';
+			ctx.response.body = this.bundleRenderer.renderToStream(renderContext);
 		});
 	}
 
