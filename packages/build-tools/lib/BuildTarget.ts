@@ -15,10 +15,10 @@ export interface TargetOptions {
 	/** Contexts used for building this target */
 	context: string[];
 
-	// TODO: improve/verify docs
 	/**
-	 * Intended entry point(s) for this target. The last entry point will be used as the bundle entry point and must call `require('@aedris/entry').start()`, optionally with arguments to expose
-	 * itself to other plugins.
+	 * Intended entry point(s) for this target.
+	 *
+	 * The last entry point will be used as the bundle entry point and must call `require('@aedris/build-tools/dist/runtime').start()`. Optionally, arguments may be provided to allow the module to expose itself to other plugins.
 	 * */
 	entry: {[entryName: string]: string | string[]};
 
