@@ -1,7 +1,8 @@
 import {ExternalsQuery} from '../BuildTarget';
 
 // Adapted from https://github.com/nodejs/node/blob/7e5d5c28ad4b2578b945854894195c49470df82a/lib/internal/modules/cjs/loader.js#L497
-const moduleNameTest = /^(?:@[^/\\%]+?\/)?[^./\\%][^/\\%]*(?=$|\/)/;
+// `!-` are not allowed at the beginning of a request due to those being used for webpack requests (for example by the vue-loader).
+const packageNameTest = /^(?:@[^/\\%]+?[/\\])?[^./\\%!-][^/\\%]*(?=$|[/\\])/;
 
 // TODO: this might include files included from externals using relative paths
 
@@ -12,7 +13,7 @@ export default function externalsGenerator({whitelist} = {whitelist: /./}) {
 
 		// If the request is for any external module and isn't whitelisted, externalize it
 		// eslint-disable-next-line consistent-return
-		if (moduleNameTest.test(query.request) && !whitelist.test(query.request)) return `commonjs ${query.request}`;
+		if (packageNameTest.test(query.request) && !whitelist.test(query.request)) return `commonjs ${query.request}`;
 
 		return undefined;
 	};
