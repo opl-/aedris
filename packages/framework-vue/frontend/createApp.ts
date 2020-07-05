@@ -27,7 +27,13 @@ export class FrameworkApp implements RuntimePlugin {
 	};
 
 	root: Vue;
-	context: AppContext;
+
+	/**
+	 * Context object passed from the backend. This can also be accessed in Vue components through `this.$vnode.ssrContext`.
+	 *
+	 * Cannot be reassigned due to `vue-server-renderer` keeping a reference to it.
+	 * */
+	readonly context: AppContext;
 
 	constructor({context}: FrameworkAppOptions) {
 		this.context = context;
