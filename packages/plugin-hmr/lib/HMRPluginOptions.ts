@@ -5,6 +5,9 @@ export interface EntryPointBehavior {
 	/** Whether the program should be ran when bundle is rebuilt. `'once'` runs the program only the first time the bundle is rebuilt. Defaults to `false`. */
 	run?: boolean | 'once';
 
+	/** If the process exits without being requested to, delay the restart by this many milliseconds. If `false`, the process will not be restarted. The restart may be delayed for longer if the bundle is being rebuilt. Defaults to `2000`. */
+	restart?: false | number;
+
 	/** Program to be ran when the bundle builds. Defaults to `'node'`. */
 	program?: string;
 
