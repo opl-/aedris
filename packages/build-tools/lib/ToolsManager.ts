@@ -2,17 +2,19 @@ import debug from 'debug';
 import {AsyncSeriesHook, SyncWaterfallHook, SyncHook} from 'tapable';
 
 import {AedrisConfigHandler, AedrisConfigHandlerOptions, AedrisPluginConfig} from './AedrisConfigHandler';
-import AedrisPlugin from './AedrisPlugin';
-import PluginManager from './PluginManager';
-import BuildTask from './task/BuildTask';
-import CleanTask from './task/CleanTask';
-import Task, {Constructor, InferredTaskOptions, TaskLike} from './task/Task';
+import {AedrisPlugin} from './AedrisPlugin';
+import {PluginManager} from './PluginManager';
+import {BuildTask} from './task/BuildTask';
+import {CleanTask} from './task/CleanTask';
+import {
+	Constructor, InferredTaskOptions, Task, TaskLike,
+} from './task/Task';
 
 const log = debug('aedris:build-tools:ToolsManager');
 
 export interface ToolsManagerOptions extends AedrisConfigHandlerOptions {}
 
-export default class ToolsManager extends PluginManager<AedrisPlugin> {
+export class ToolsManager extends PluginManager<AedrisPlugin> {
 	hooks = {
 		afterRawConfig: new AsyncSeriesHook<ToolsManager>(['toolsManager']),
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),

@@ -1,7 +1,7 @@
 /// <reference types="@aedris/framework-vue/dist/extend-runtime-types" />
 
 import {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
-import importDefault from '@aedris/build-tools/dist/util/importDefault';
+import {importDefault} from '@aedris/build-tools/dist/util/importDefault';
 import {SyncWaterfallHook} from 'tapable';
 import Vue from 'vue';
 import Vuex, {Store, StoreOptions} from 'vuex';

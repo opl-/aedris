@@ -14,7 +14,7 @@ const log = debug('aedris:build-tools:BuildTask');
  *
  * @param config Config used to identify the local plugins. Will be modified to adjust the local plugin locations.
  */
-export default async function buildLocalPlugins(config: AedrisPluginConfig) {
+export async function buildLocalPlugins(config: AedrisPluginConfig) {
 	if (config.plugins.length === 0) return;
 
 	const localPluginPaths: string[] = [];

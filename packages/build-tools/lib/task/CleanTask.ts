@@ -1,10 +1,10 @@
 import {AsyncSeriesHook} from 'tapable';
 
 import {Builder} from '..';
-import BuildTask from './BuildTask';
-import Task from './Task';
+import {BuildTask} from './BuildTask';
+import {Task} from './Task';
 
-export default class CleanTask extends Task<typeof CleanTask> {
+export class CleanTask extends Task<typeof CleanTask> {
 	static command = {
 		command: 'clean',
 		describe: 'Clean an Aedris project',

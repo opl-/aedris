@@ -1,6 +1,6 @@
 import Vue from 'vue';
 
-import createApp, {AppContext} from './createApp';
+import {AppContext, createApp} from './createApp';
 
 export default function startApp(context: AppContext): Promise<Vue> {
 	return createApp(context).then((app) => new Promise((resolve) => {

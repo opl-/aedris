@@ -6,7 +6,7 @@ import path from 'path';
 
 const APP_ROOT = process.env.AEDRIS_DIR || process.cwd();
 
-export default class Backend extends Koa {
+export class Backend extends Koa {
 	/* The main app router */
 	readonly router = new Cottage();
 

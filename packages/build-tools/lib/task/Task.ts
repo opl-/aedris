@@ -11,7 +11,7 @@ export interface TaskOptions<B extends {[key: string]: Options} = {}> {
 	configPath: string;
 }
 
-export default abstract class Task<T extends Pick<typeof Task, 'command'> = {command: {}}> {
+export abstract class Task<T extends Pick<typeof Task, 'command'> = {command: {}}> {
 	static command: TaskCommandModule = {};
 
 	argv: InferredTaskOptions<T>['argv'];

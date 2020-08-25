@@ -6,15 +6,15 @@ import {inspect, InspectOptions} from 'util';
 import yargs from 'yargs';
 
 import {Builder, DefaultContext} from '..';
-import Task from './Task';
+import {Task} from './Task';
 import {TaskError} from './TaskError';
-import buildLocalPlugins from '../util/buildLocalPlugins';
+import {buildLocalPlugins} from '../util/buildLocalPlugins';
 
 const HOOK_NAME = '@aedris/build-tools:BuildTask';
 
 const log = debug('aedris:build-tools:BuildTask');
 
-export default class BuildTask extends Task<typeof BuildTask> {
+export class BuildTask extends Task<typeof BuildTask> {
 	static command = {
 		command: 'build',
 		describe: 'Build an Aedris project',

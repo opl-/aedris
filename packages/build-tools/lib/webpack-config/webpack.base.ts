@@ -4,7 +4,7 @@ import util from 'util';
 import WebpackVirtualModules from 'webpack-virtual-modules';
 
 import {WebpackConfigCreator, DefaultContext} from '../Builder';
-import externalsGenerator from '../util/externals';
+import {externalsGenerator} from '../util/externals';
 
 // TODO: use file-loader, style-loader, css-loader
 // TODO: add aliases

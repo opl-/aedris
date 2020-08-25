@@ -12,7 +12,7 @@ export interface LoadPluginOptions {
 	resolvePaths?: string[];
 }
 
-export default abstract class PluginManager<T> {
+export abstract class PluginManager<T> {
 	pluginQueue: string[] = [];
 	registeredPlugins: {[pluginName: string]: PluginInfo<T>} = {};
 

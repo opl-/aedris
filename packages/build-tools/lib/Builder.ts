@@ -9,9 +9,9 @@ import webpack, {MultiCompiler, MultiWatching} from 'webpack';
 import ChainConfig from 'webpack-chain';
 
 import {AedrisConfigHandler, AedrisConfigHandlerOptions, AedrisPluginConfig} from './AedrisConfigHandler';
-import AedrisPlugin from './AedrisPlugin';
+import {AedrisPlugin} from './AedrisPlugin';
 import {BuildTarget, TargetOptions} from './BuildTarget';
-import PluginManager from './PluginManager';
+import {PluginManager} from './PluginManager';
 import webpackConfigNode from './webpack-config/webpack.node';
 import webpackConfigWeb from './webpack-config/webpack.web';
 

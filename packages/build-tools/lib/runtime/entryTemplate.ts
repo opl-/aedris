@@ -1,6 +1,6 @@
 import {RuntimePluginEntry} from '../BuildTarget';
 
-export default function entryTemplate(plugins: Record<string, RuntimePluginEntry>): string {
+export function entryTemplate(plugins: Record<string, RuntimePluginEntry>): string {
 	return `import loader from '@aedris/build-tools/dist/runtime/index';
 
 [

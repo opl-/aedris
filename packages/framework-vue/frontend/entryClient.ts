@@ -1,4 +1,4 @@
-import createApp from './createApp';
+import {createApp} from './createApp';
 
 export default createApp().then((app) => {
 	app.root.$router.onReady(() => {

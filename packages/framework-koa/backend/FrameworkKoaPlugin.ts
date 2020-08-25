@@ -1,7 +1,7 @@
 import {RuntimePlugin, RuntimePluginLoader} from '@aedris/build-tools/dist/runtime';
 import {AsyncParallelHook} from 'tapable';
 
-import Backend from './Backend';
+import {Backend} from './Backend';
 
 export class FrameworkKoaPlugin implements RuntimePlugin {
 	hooks = {

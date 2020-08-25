@@ -6,7 +6,7 @@ const packageNameTest = /^(?:@[^/\\%]+?[/\\])?[^./\\%!-][^/\\%]*(?=$|[/\\])/;
 
 // TODO: this might include files included from externals using relative paths
 
-export default function externalsGenerator({whitelist} = {whitelist: /./}) {
+export function externalsGenerator({whitelist} = {whitelist: /./}) {
 	return function externals(query: ExternalsQuery): string | undefined {
 		// Ignore @aedris/entry and @aedris/dynamic imports: those are special and handled by other parts of the code
 		if (/^@aedris\/(?:entry|dynamic)(?:\/.+)?$/.test(query.request)) return undefined;

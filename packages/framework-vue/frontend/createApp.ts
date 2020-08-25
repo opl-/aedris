@@ -6,7 +6,7 @@ import Vue, {ComponentOptions} from 'vue';
 import {RouterOptions} from 'vue-router';
 
 import AppRoot from './component/AppRoot';
-import createRouter from './createRouter';
+import {createRouter} from './createRouter';
 
 const HOOK_NAME = '@aedris/framework-vue';
 
@@ -56,7 +56,7 @@ export class FrameworkApp implements RuntimePlugin {
 	}
 }
 
-export default async function createApp(context: AppContext = {}): Promise<FrameworkApp> {
+export async function createApp(context: AppContext = {}): Promise<FrameworkApp> {
 	// Start the application
 	const app = new FrameworkApp({
 		context,

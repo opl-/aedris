@@ -1,4 +1,4 @@
-import importDefault from '@aedris/build-tools/dist/util/importDefault';
+import {importDefault} from '@aedris/build-tools/dist/util/importDefault';
 import Vue from 'vue';
 import Router, {RouterOptions} from 'vue-router';
 
@@ -6,7 +6,7 @@ import {FrameworkApp} from './createApp';
 
 Vue.use(Router);
 
-export default function createRouter(frameworkApp: FrameworkApp): Router {
+export function createRouter(frameworkApp: FrameworkApp): Router {
 	let routerOptions: RouterOptions = {
 		mode: 'history',
 	};

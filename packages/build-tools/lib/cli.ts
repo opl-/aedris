@@ -8,8 +8,8 @@ import path from 'path';
 import yargs, {Argv} from 'yargs';
 
 import {TaskError} from './task/TaskError';
-import ToolsManager from './ToolsManager';
-import buildLocalPlugins from './util/buildLocalPlugins';
+import {ToolsManager} from './ToolsManager';
+import {buildLocalPlugins} from './util/buildLocalPlugins';
 
 const HOOK_NAME = '@aedris/build-tools:cli';
 

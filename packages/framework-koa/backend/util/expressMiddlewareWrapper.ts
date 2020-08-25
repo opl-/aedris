@@ -7,7 +7,7 @@ import {Middleware} from 'koa';
  * @param middleware The Express middleware we want to use under Koa
  * @returns Function with Koa's middleware signature
  */
-export default function expressMiddlewareWrapperFactory(middleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => any): Middleware {
+export function expressMiddlewareWrapper(middleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => any): Middleware {
 	return (ctx, next) => new Promise((resolve, reject) => {
 		try {
 			let callNext = false;

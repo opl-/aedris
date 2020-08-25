@@ -18,7 +18,7 @@ export interface RegisteredRuntimePlugin {
 	options: any;
 }
 
-export default class RuntimePluginLoader {
+export class RuntimePluginLoader {
 	hooks = {
 		init: new AsyncParallelHook(),
 	};
