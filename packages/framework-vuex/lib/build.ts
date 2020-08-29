@@ -11,10 +11,15 @@ export default <AedrisPlugin> {
 		builder.usePlugin('@aedris/framework-vue');
 
 		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (target) => {
+			// Add the `vuex` context to the default Vue framework targets
+			if (([VUE_TARGET_NAMES.app.frontendClient, VUE_TARGET_NAMES.app.frontendServer] as string[]).includes(target.name)) {
+				target.context.push('vuex');
+			}
+
 			// This Vuex plugin has no special behavior when building plugins
 			if (target.config.isPlugin) return;
 
-			if (([VUE_TARGET_NAMES.app.frontendClient, VUE_TARGET_NAMES.app.frontendServer] as string[]).includes(target.name)) {
+			if (target.context.includes('vuex')) {
 				const options = target.getPluginOptions('@aedris/framework-vue');
 
 				// TODO: config
@@ -25,7 +30,7 @@ export default <AedrisPlugin> {
 		});
 
 		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
-			if (!target.config.isPlugin && ([VUE_TARGET_NAMES.app.frontendClient, VUE_TARGET_NAMES.app.frontendServer] as string[]).includes(target.name)) {
+			if (!target.config.isPlugin && target.context.includes('vuex')) {
 				// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
 				target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
 					if (query.request === `${HOOK_NAME}/dist/frontend`) return false;
