@@ -101,6 +101,10 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 		await this.hooks.registerTargets.promise(this);
 
+		if (this.targets.length === 0) {
+			throw new Error('Builder loaded with no targets. Aborting.');
+		}
+
 		log('Creating webpack compiler');
 
 		this.webpackCompiler = webpack(this.targets.map((v) => v.webpackConfig));
