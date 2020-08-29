@@ -188,11 +188,13 @@ export class Builder extends PluginManager<AedrisPlugin> {
 			// Remove duplicates
 			.filter((p, index, arr) => !arr.slice(0, index).includes(p)) as string[];
 
-		if (process.env.AEDRIS_SIMULATE) return void console.log('Would remove:', outputDirectories);
-
-		await Promise.all(outputDirectories.map((dir) => fs.rmdir(dir, {
-			recursive: true,
-		})));
+		if (process.env.AEDRIS_SIMULATE) {
+			console.log('Would remove:', outputDirectories);
+		} else {
+			await Promise.all(outputDirectories.map((dir) => fs.rmdir(dir, {
+				recursive: true,
+			})));
+		}
 
 		await this.hooks.afterClean.promise(this);
 	}
