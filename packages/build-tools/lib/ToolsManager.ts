@@ -83,7 +83,7 @@ export class ToolsManager extends PluginManager<AedrisPlugin> {
 	// eslint-disable-next-line consistent-return
 	async doApplyPlugin(plugin: AedrisPlugin): Promise<any> {
 		// Call hook only if it exists
-		if (plugin && typeof plugin.hookTools === 'function') return plugin.hookTools(this);
+		if (typeof plugin?.hookTools === 'function') return plugin.hookTools(this);
 	}
 
 	registerTask(taskName: string, taskConstructor: TaskLike) {
