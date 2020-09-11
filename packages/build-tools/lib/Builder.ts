@@ -1,9 +1,7 @@
 import debug from 'debug';
 import {promises as fs, Stats} from 'fs';
 import path from 'path';
-import {
-	AsyncParallelHook, SyncHook, SyncWaterfallHook, SyncBailHook, AsyncSeriesHook,
-} from 'tapable';
+import {AsyncParallelHook, SyncWaterfallHook, AsyncSeriesHook} from 'tapable';
 import {promisify} from 'util';
 import webpack, {MultiCompiler, MultiWatching} from 'webpack';
 import ChainConfig from 'webpack-chain';
@@ -12,26 +10,14 @@ import {AedrisConfigHandler, AedrisConfigHandlerOptions, AedrisPluginConfig} fro
 import {AedrisPlugin} from './AedrisPlugin';
 import {BuildTarget, TargetOptions} from './BuildTarget';
 import {PluginManager} from './PluginManager';
-import webpackConfigNode from './webpack-config/webpack.node';
-import webpackConfigWeb from './webpack-config/webpack.web';
 
 const log = debug('aedris:build-tools');
-
-export enum DefaultContext {
-	NODE = 'node',
-	WEB = 'web',
-}
 
 export type WebpackConfigCreator = (config: ChainConfig, target: BuildTarget) => ChainConfig;
 
 interface BuilderOptions extends AedrisConfigHandlerOptions {}
 
 export class Builder extends PluginManager<AedrisPlugin> {
-	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
-		[DefaultContext.NODE]: webpackConfigNode,
-		[DefaultContext.WEB]: webpackConfigWeb,
-	};
-
 	/** `true` if not building for production */
 	isDevelopment: boolean = process.env.NODE_ENV !== 'production';
 
@@ -43,15 +29,28 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	targets: BuildTarget[] = [];
 
 	hooks = {
+		/**
+		 * Called after a "raw" Aedris config has been loaded and normalized. The plugin options are not normalized yet, nor have any plugins been loaded.
+		 *
+		 * Used internally to build local plugins and rewrite their paths to the built files.
+		 */
 		afterRawConfig: new AsyncSeriesHook<Builder>(['builder']),
+		/**
+		 * Called after the plugins were loaded and their options were normalized through the `AedrisPlugin.normalizeOptions` method.
+		 *
+		 * This is the last place where the config should be modified. Doing otherwise might result in unexpected behavior.
+		 */
 		normalizeConfig: new SyncWaterfallHook<AedrisPluginConfig>(['config']),
+		/**
+		 * Called when the config is fully loaded and normalized by both Aedris and loaded plugins.
+		 *
+		 * At this point the config is not meant to change, meaning that plugins can use other plugins' options to alter their own behavior.
+		 */
 		afterConfig: new AsyncSeriesHook<Builder>(['builder']),
-		registerContexts: new SyncHook<Builder>(['builder']),
+		/** Called to register Build Targets. */
 		registerTargets: new AsyncParallelHook<Builder>(['builder']),
-		registerDynamicModules: new AsyncParallelHook<BuildTarget>(['buildTarget']),
-		prepareWebpackConfig: new SyncWaterfallHook<ChainConfig, BuildTarget>(['webpackConfig', 'target']),
+		/** Called after the Build Targets have been prepared and the Builder is ready to enter build or watch mode. */
 		afterLoad: new AsyncSeriesHook<Builder>(['builder']),
-		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 		beforeClean: new AsyncSeriesHook<Builder>(['builder']),
 		afterClean: new AsyncSeriesHook<Builder>(['builder']),
 		beforeWatch: new AsyncSeriesHook<Builder>(['builder']),
@@ -82,9 +81,6 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		await this.loadPluginsFromConfig();
 
 		log('Passing config to plugins');
-
-		this.configHandler.config = this.hooks.normalizeConfig.call(this.config);
-
 		Object.entries(this.registeredPlugins).forEach(([pluginName, info]) => {
 			if (!info.plugin.normalizeOptions) return;
 
@@ -92,13 +88,12 @@ export class Builder extends PluginManager<AedrisPlugin> {
 			this.config.options[pluginName] = info.plugin.normalizeOptions(this.config.options[pluginName], this.config);
 		});
 
+		this.configHandler.config = this.hooks.normalizeConfig.call(this.config);
+
 		// The config is now fully normalized for plugins to use
 		await this.hooks.afterConfig.promise(this);
 
-		this.hooks.registerContexts.call(this);
-
 		log('Creating targets');
-
 		await this.hooks.registerTargets.promise(this);
 
 		if (this.targets.length === 0) {
@@ -106,19 +101,10 @@ export class Builder extends PluginManager<AedrisPlugin> {
 		}
 
 		log('Creating webpack compiler');
-
 		this.webpackCompiler = webpack(this.targets.map((v) => v.webpackConfig));
 
-		// Assign the individual targets their compiler instance
-		this.targets.forEach((acc, index) => {
-			acc.compiler = this.webpackCompiler.compilers[index];
-		});
-
-		log('Creating entry points');
-
-		Object.values(this.targets).forEach((target) => {
-			target.generateEntry();
-		});
+		// Assign the individual targets their compiler instance and let them finalize setup
+		await Promise.all(this.targets.map((target, index) => target.setWebpackCompiler(this.webpackCompiler.compilers[index])));
 
 		await this.hooks.afterLoad.promise(this);
 
@@ -148,7 +134,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 	// eslint-disable-next-line consistent-return
 	async doApplyPlugin(plugin: AedrisPlugin): Promise<any> {
 		// Call hook only if it exists
-		if (plugin && typeof plugin.hookBuild === 'function') return plugin.hookBuild(this);
+		if (typeof plugin?.hookBuild === 'function') return plugin.hookBuild(this);
 	}
 
 	getTarget(targetName: string): BuildTarget | null {
@@ -162,18 +148,19 @@ export class Builder extends PluginManager<AedrisPlugin> {
 
 		const target = new BuildTarget(this, opts);
 
-		await target.registerDynamicModules();
-		target.createConfig();
+		// FIXME: hookTarget acts different than tools and builder hooks due to not being managed by a PluginManager. making targets reload the plugins would allow standardized behavior and independent builds (multithreading) at the expense of longer load times and memory usage
+		log('Calling plugin hooks for target %j', target.name);
+		await Promise.all(Object.values(this.registeredPlugins).map((info) => {
+			if (typeof info.plugin?.hookTarget === 'function') return info.plugin.hookTarget(target);
+
+			return Promise.resolve();
+		}));
+
+		await target.load();
 
 		this.targets.push(target);
 
 		return target;
-	}
-
-	registerContext(contextName: string, configCreator: WebpackConfigCreator) {
-		log('Registering context %j', contextName);
-
-		this.contextToConfigCreatorMap[contextName] = configCreator;
 	}
 
 	async cleanOutputs(): Promise<void> {
@@ -225,7 +212,7 @@ export class Builder extends PluginManager<AedrisPlugin> {
 				// TODO: per target config
 				path.join(this.config.outputDir, '**'),
 				// Allow plugins to ignore files
-				(filePath, stats) => !!this.hooks.watchShouldIgnore.call(filePath, stats as unknown as Stats),
+				(filePath, stats) => Object.values(this.targets).some((target) => !!target.hooks.watchShouldIgnore.call(filePath, stats as unknown as Stats)),
 			],
 		}, () => {});
 	}

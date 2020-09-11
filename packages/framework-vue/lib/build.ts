@@ -5,6 +5,7 @@ import {
 	AedrisPlugin,
 	Builder,
 	DefaultContext,
+	BuildTarget,
 } from '@aedris/build-tools';
 import {HMRPluginOptions} from '@aedris/plugin-hmr';
 import path from 'path';
@@ -103,15 +104,16 @@ export default <AedrisPlugin> {
 				}),
 			]);
 		});
-
-		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (target) => {
+	},
+	hookTarget(buildTarget: BuildTarget) {
+		buildTarget.hooks.prepareTarget.tap(HOOK_NAME, (target) => {
 			const options = target.getPluginOptions(HOOK_NAME);
 
 			// TODO: config
-			target.setDynamicModule(`${HOOK_NAME}:router`, path.resolve(options.frontendDir, 'router/'));
+			target.registerDynamicModule(`${HOOK_NAME}:router`, path.resolve(options.frontendDir, 'router/'));
 		});
 
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
+		buildTarget.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
 			target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
 				if (/^@aedris\/framework-vue\/dist\/(?:entryFrontend(?:Client|Server)$)/.test(query.request)) return false;

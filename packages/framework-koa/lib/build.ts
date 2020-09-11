@@ -5,6 +5,7 @@ import {
 	AedrisConfigHandler,
 	AedrisPlugin,
 	Builder,
+	BuildTarget,
 	DefaultContext,
 } from '@aedris/build-tools';
 import {HMRPluginOptions} from '@aedris/plugin-hmr';
@@ -110,15 +111,16 @@ export default <AedrisPlugin> {
 			// When using the boilerplate entry, the plugin registers itself when calling `RuntimePluginLoader.start`. Otherwise, we need to register the runtime plugin manually
 			if (!useBoilerplateEntry) target.registerRuntimePlugin('@aedris/framework-koa', '@aedris/framework-koa/dist/index');
 		});
-
-		builder.hooks.registerDynamicModules.tap(HOOK_NAME, (target) => {
+	},
+	hookTarget(buildTarget: BuildTarget) {
+		buildTarget.hooks.prepareTarget.tap(HOOK_NAME, (target) => {
 			const options = target.getPluginOptions(HOOK_NAME);
 
 			// TODO: config?
-			target.setDynamicModule(`${HOOK_NAME}:routes`, path.resolve(options.backendDir, 'route/index.ts'));
+			target.registerDynamicModule(`${HOOK_NAME}:routes`, path.resolve(options.backendDir, 'route/index.ts'));
 		});
 
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
+		buildTarget.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			// Never externalize our own entry bundles when building the app for dynamic module resolution used in those bundles to work
 			target.hooks.externalsQuery.tap(HOOK_NAME, (query) => {
 				if (query.request === '@aedris/framework-koa/dist/entry') return false;

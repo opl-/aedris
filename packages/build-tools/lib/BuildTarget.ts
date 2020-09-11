@@ -1,5 +1,11 @@
 import debug from 'debug';
-import {AsyncSeriesBailHook} from 'tapable';
+import {Stats} from 'fs';
+import {
+	AsyncSeriesBailHook,
+	AsyncSeriesHook,
+	SyncBailHook,
+	SyncWaterfallHook,
+} from 'tapable';
 import {Configuration, Compiler} from 'webpack';
 import ChainConfig from 'webpack-chain';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
@@ -7,6 +13,13 @@ import VirtualModulesPlugin from 'webpack-virtual-modules';
 import {Builder, WebpackConfigCreator} from './Builder';
 import {entryTemplate} from './runtime/entryTemplate';
 import webpackConfigBase from './webpack-config/webpack.base';
+import webpackConfigNode from './webpack-config/webpack.node';
+import webpackConfigWeb from './webpack-config/webpack.web';
+
+export enum DefaultContext {
+	NODE = 'node',
+	WEB = 'web',
+}
 
 export interface TargetOptions {
 	/** The name used to refer to this target. Must be unique for the Builder instance. */
@@ -41,8 +54,30 @@ export interface ExternalsQuery {
 
 export class BuildTarget {
 	hooks = {
+		/**
+		 * Called to initialize the Build Target.
+		 *
+		 * This is where contexts, dynamic modules, runtime plugins, and other similar things for this target are registered.
+		 */
+		prepareTarget: new AsyncSeriesHook<BuildTarget>(['buildTarget']),
+		/**
+		 * Called to allow plugins to modify the config generated based on Build Contexts.
+		 */
+		prepareWebpackConfig: new SyncWaterfallHook<ChainConfig, BuildTarget>(['webpackConfig', 'buildTarget']),
+		/**
+		 * Called after the target has been fully prepared, but before `Builder.hooks.afterLoad` is called.
+		 *
+		 * This is the last place to make any changes to this target.
+		 */
+		afterLoad: new AsyncSeriesHook<BuildTarget>(['buildTarget']),
+		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 		/** Used as a replacement for the webpack externals config option as webpack-chain doesn't support it. See https://github.com/neutrinojs/webpack-chain/issues/222. */
 		externalsQuery: new AsyncSeriesBailHook<ExternalsQuery, undefined, undefined, string | false | undefined>(['query']),
+	};
+
+	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
+		[DefaultContext.NODE]: webpackConfigNode,
+		[DefaultContext.WEB]: webpackConfigWeb,
 	};
 
 	name: string;
@@ -106,7 +141,23 @@ export class BuildTarget {
 	}
 
 	getWebpackConfigCreatorForContext(context: string): WebpackConfigCreator {
-		return this.builder.contextToConfigCreatorMap[context];
+		return this.contextToConfigCreatorMap[context];
+	}
+
+	async load(): Promise<void> {
+		if (this.compiler) throw new Error('BuildTarget instance already loaded');
+
+		await this.prepareTarget();
+		this.createConfig();
+	}
+
+	async prepareTarget(): Promise<void> {
+		this.log('Preparing Build Target %j', this.name);
+
+		this.dynamicAppModules = {};
+		this.runtimePlugins = {};
+
+		await this.hooks.prepareTarget.promise(this);
 	}
 
 	createConfig(): void {
@@ -140,7 +191,7 @@ export class BuildTarget {
 		});
 
 		// Allow plugins to extend the generated config
-		configChain = this.builder.hooks.prepareWebpackConfig.call(configChain, this);
+		configChain = this.hooks.prepareWebpackConfig.call(configChain, this);
 
 		if (configChain.has('externals')) throw new Error('Use BuildTarget.hooks.externalsQuery for externals to allow manipulating them from other plugins');
 
@@ -161,27 +212,32 @@ export class BuildTarget {
 		const virtualModulesPlugin = (this.webpackConfig.plugins || []).find((p) => p instanceof VirtualModulesPlugin) as VirtualModulesPlugin | undefined;
 		if (!virtualModulesPlugin) throw new Error('The required VirtualModulesPlugin is missing from the webpack config.');
 		this.virtualModulesPlugin = virtualModulesPlugin;
+	}
+
+	async setWebpackCompiler(compiler: Compiler): Promise<void> {
+		this.compiler = compiler;
 
 		// Write the cached modules in case any already somehow appeared
 		Object.entries(this.virtualModules).forEach(([path, module]) => {
-			virtualModulesPlugin.writeModule(path, module);
+			this.virtualModulesPlugin!.writeModule(path, module);
 		});
+
+		this.log('Generating entry point');
+		this.generateEntry();
+
+		await this.hooks.afterLoad.promise(this);
 	}
 
-	async registerDynamicModules(): Promise<void> {
-		this.dynamicAppModules = {};
+	registerContext(contextName: string, configCreator: WebpackConfigCreator) {
+		this.contextToConfigCreatorMap[contextName] = configCreator;
 
-		this.log('Registering dynamic modules for target %j', this.name);
-
-		await this.builder.hooks.registerDynamicModules.promise(this);
-
-		this.log('Registered %i dynamic modules', Object.keys(this.dynamicAppModules).length);
+		this.log('Registered context %j', contextName);
 	}
 
-	setDynamicModule(dynamicModuleName: string, modulePath: string) {
+	registerDynamicModule(dynamicModuleName: string, modulePath: string) {
 		this.dynamicAppModules[dynamicModuleName] = modulePath;
 
-		this.log('Set dynamic module %j to %j', dynamicModuleName, modulePath);
+		this.log('Registered dynamic module %j to %j', dynamicModuleName, modulePath);
 	}
 
 	registerRuntimePlugin(pluginName: string, entry: string, options?: any): void {
@@ -200,6 +256,6 @@ export class BuildTarget {
 	writeVirtualModule(path: string, module: string) {
 		this.virtualModules[path] = module;
 
-		if (this.virtualModulesPlugin) this.virtualModulesPlugin.writeModule(path, module);
+		if (this.virtualModulesPlugin && this.compiler) this.virtualModulesPlugin.writeModule(path, module);
 	}
 }

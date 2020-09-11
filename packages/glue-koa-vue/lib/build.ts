@@ -1,7 +1,7 @@
 /// <reference types="@aedris/framework-koa/dist/extend-build-types" />
 /// <reference types="@aedris/plugin-hmr/dist/extend-build-types" />
 
-import {AedrisPlugin, Builder} from '@aedris/build-tools';
+import {AedrisPlugin, Builder, BuildTarget} from '@aedris/build-tools';
 import {TARGET_NAME as KOA_TARGET_NAME} from '@aedris/framework-koa';
 import {TARGET_NAME as VUE_TARGET_NAME} from '@aedris/framework-vue';
 
@@ -94,15 +94,14 @@ export default <AedrisPlugin> {
 		builder.usePlugin('@aedris/framework-koa');
 		builder.usePlugin('@aedris/framework-vue');
 
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
-			// Register ourselves as a runtime plugin when building the app
-			if (!target.config.isPlugin && target.name === KOA_TARGET_NAME.app.backend) {
-				target.registerRuntimePlugin(HOOK_NAME, `${HOOK_NAME}/dist/backend`);
-			}
-
-			return config;
-		});
-
 		addHMRSupport(builder);
+	},
+	hookTarget(buildTarget: BuildTarget): void {
+		if (!buildTarget.config.isPlugin && buildTarget.name === KOA_TARGET_NAME.app.backend) {
+			// Register ourselves as a runtime plugin when building the app
+			buildTarget.hooks.prepareTarget.tap(HOOK_NAME, (target) => {
+				target.registerRuntimePlugin(HOOK_NAME, `${HOOK_NAME}/dist/backend`);
+			});
+		}
 	},
 };

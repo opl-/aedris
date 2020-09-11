@@ -1,15 +1,15 @@
-import {AedrisPlugin, Builder, DefaultContext} from '@aedris/build-tools';
+import {AedrisPlugin, BuildTarget, DefaultContext} from '@aedris/build-tools';
 
 const HOOK_NAME = '@aedris/vue';
 
 export default <AedrisPlugin> {
-	async hookBuild(builder: Builder) {
+	async hookTarget(buildTarget: BuildTarget) {
 		const {VueLoaderPlugin} = await import('vue-loader');
 		const {default: VueSSRClientPlugin} = await import('vue-server-renderer/client-plugin');
 		const {default: VueSSRServerPlugin} = await import('vue-server-renderer/server-plugin');
 
-		builder.hooks.registerContexts.tap(HOOK_NAME, (b) => {
-			b.registerContext('vue', (config, target) => {
+		buildTarget.hooks.prepareTarget.tap(HOOK_NAME, (t) => {
+			t.registerContext('vue', (config, target) => {
 				// Try matching the `.vue` extension
 				config.resolve.extensions.add('.vue');
 

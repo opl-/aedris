@@ -1,6 +1,6 @@
 import './extend-build-types';
 
-import {AedrisPlugin, Builder} from '@aedris/build-tools';
+import {AedrisPlugin, Builder, BuildTarget} from '@aedris/build-tools';
 import {HotModuleReplacementPlugin} from 'webpack';
 
 import {HMRPluginOptions} from './HMRPluginOptions';
@@ -39,7 +39,25 @@ export default <AedrisPlugin> {
 			targetRunners: {},
 		};
 
-		builder.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
+		builder.hooks.afterLoad.tap(HOOK_NAME, (b) => {
+			b.targets.forEach((target) => {
+				const options = target.getPluginOptions(HOOK_NAME);
+				if (!options) return;
+
+				// Create TargetRunners only for targets that have enabled options for at least one entry point
+				const namesInOptions = Object.entries(options.entryPoint).filter(([, value]) => !!value).map(([name]) => name);
+				if (!Object.keys(target.entry).some((name) => namesInOptions.includes(name))) return;
+
+				const runner = new TargetRunner(target);
+				runner.createHooks();
+				instance.targetRunners[target.name] = runner;
+			});
+		});
+
+		return instance;
+	},
+	hookTarget(buildTarget: BuildTarget) {
+		buildTarget.hooks.prepareWebpackConfig.tap(HOOK_NAME, (config, target) => {
 			// HMR should never be used outside of development
 			if (!target.builder.isDevelopment) return config;
 
@@ -68,22 +86,5 @@ export default <AedrisPlugin> {
 
 			return config;
 		});
-
-		builder.hooks.afterLoad.tap(HOOK_NAME, (b) => {
-			b.targets.forEach((target) => {
-				const options = target.getPluginOptions(HOOK_NAME);
-				if (!options) return;
-
-				// Create TargetRunners only for targets that have enabled options for at least one entry point
-				const namesInOptions = Object.entries(options.entryPoint).filter(([, value]) => !!value).map(([name]) => name);
-				if (!Object.keys(target.entry).some((name) => namesInOptions.includes(name))) return;
-
-				const runner = new TargetRunner(target);
-				runner.createHooks();
-				instance.targetRunners[target.name] = runner;
-			});
-		});
-
-		return instance;
 	},
 };

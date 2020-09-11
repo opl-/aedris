@@ -2,7 +2,8 @@ import debug from 'debug';
 import path from 'path';
 
 import {AedrisConfigHandler, AedrisPluginConfig} from '../AedrisConfigHandler';
-import {Builder, DefaultContext} from '../Builder';
+import {Builder} from '../Builder';
+import {DefaultContext} from '../BuildTarget';
 
 const HOOK_NAME = '@aedris/build-tools:buildLocalPlugins';
 const LOCAL_PLUGIN_OUTPUT_DIR = './.cache/aedris/local-plugin/';

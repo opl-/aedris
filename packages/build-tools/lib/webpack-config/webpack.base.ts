@@ -3,7 +3,8 @@ import path from 'path';
 import util from 'util';
 import WebpackVirtualModules from 'webpack-virtual-modules';
 
-import {WebpackConfigCreator, DefaultContext} from '../Builder';
+import {WebpackConfigCreator} from '../Builder';
+import {DefaultContext} from '../BuildTarget';
 import {externalsGenerator} from '../util/externals';
 
 // TODO: use file-loader, style-loader, css-loader
