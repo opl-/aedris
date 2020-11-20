@@ -58,7 +58,7 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 	}
 
 	async createSSRMiddleware() {
-		this.koaFramework.app.fallbackMiddleware.push(async (ctx) => {
+		this.koaFramework.app.router.get('/:path(.*)+', 10000, async (ctx) => {
 			if (process.env.NODE_ENV === 'development' && !this.bundleRenderer) {
 				// TODO: handle creating the bundle renderer more gracefully
 				this.createBundleRenderer();
@@ -93,6 +93,6 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 		// Reload the server bundle whenever a new one is built
 		hotMiddlewareHandler.hooks.done.for('@aedris/framework-vue:app-frontend-server').tap(HOOK_NAME, () => this.createBundleRenderer());
 
-		this.koaFramework.app.fallbackMiddleware.unshift(hotMiddlewareHandler.koaMiddleware);
+		this.koaFramework.app.router.use('/*', -10000, hotMiddlewareHandler.koaMiddleware);
 	}
 }

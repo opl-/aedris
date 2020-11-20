@@ -1,48 +1,40 @@
-import {Cottage} from 'cottage';
-import Koa, {Middleware} from 'koa';
-import compose from 'koa-compose';
-import koaStatic from 'koa-static';
+import Koa from 'koa';
+import {Router} from 'koa-butterfly';
+import koaSend from 'koa-send';
 import path from 'path';
 
 const APP_ROOT = process.env.AEDRIS_DIR || process.cwd();
 
 export class Backend extends Koa {
 	/* The main app router */
-	readonly router = new Cottage();
+	readonly router = new Router();
 
 	/* Router for all `/_/` endpoints. */
-	readonly backendRouter = new Cottage();
+	readonly backendRouter = new Router();
 
 	/* Router for API endpoints. */
-	readonly apiRouter = new Cottage();
-
-	/* Array of middleware executed for all requests. */
-	readonly globalMiddleware: Middleware[] = [];
-
-	/* Array of middleware executed for all API endpoints. */
-	readonly apiMiddleware: Middleware[] = [];
-
-	// TODO: do i like this name? i'm not sure i like this name.
-	/* Array of middleware executed when none of the backend middleware matches. This is primarily intended to be used for frontend. */
-	readonly fallbackMiddleware: Middleware[] = [];
+	readonly apiRouter = new Router();
 
 	constructor() {
 		super();
 
-		// Set up backend routers. Routers get mounted as middleware instead of as Routers to allow modification after mounting.
-		this.router.use(compose(this.globalMiddleware));
-		this.apiRouter.use(compose(this.apiMiddleware));
-
 		// TODO: config
-		this.backendRouter.use('/v1', this.apiRouter.callback());
+		this.backendRouter.use('/v1*', this.apiRouter);
 
-		this.backendRouter.use('/res', koaStatic(path.resolve(APP_ROOT, 'dist/frontend-client/')));
+		// Serve static files
+		this.backendRouter.get('/res/:path+', async (ctx) => {
+			try {
+				await koaSend(ctx, ctx.params.path, {
+					root: path.resolve(APP_ROOT, 'dist/frontend-client/'),
+				});
+			} catch (ex) {
+				if (ex.status !== 404) throw ex;
+			}
+		});
 
-		this.router.use('/_', this.backendRouter.callback());
-
-		this.router.use(compose(this.fallbackMiddleware));
+		this.router.use('/_*', this.backendRouter);
 
 		// Mount the global router
-		this.use(this.router.callback());
+		this.use(this.router.middleware());
 	}
 }
