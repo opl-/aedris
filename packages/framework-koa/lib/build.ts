@@ -53,6 +53,7 @@ function addHMRSupport(builder: Builder) {
 		// TODO: use overrides
 		options.entryPoint.backend = {
 			run: true,
+			printOutput: true,
 			args: [
 				// TODO: use config
 				'dist/backend/backend.js',
