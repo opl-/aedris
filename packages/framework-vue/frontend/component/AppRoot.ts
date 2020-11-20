@@ -1,10 +1,11 @@
 import Vue from 'vue';
 
-import DefaultLayout from './DefaultLayout';
+const DefaultLayout = () => import('./DefaultLayout');
 
 export default Vue.extend({
 	render(h) {
-		return h(DefaultLayout, {
+		// Use a custom layout if the route provides one
+		return h(this.$router.currentRoute.matched[0]?.components?.layout || DefaultLayout, {
 			attrs: {
 				id: 'app',
 			},
