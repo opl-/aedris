@@ -28,7 +28,7 @@
   "dependencies": {
     "@aedris/plugin-hmr": "^0.1.0",
     "koa": "^2.8.1",
-    "koa-butterfly": "^0.1.1",
+    "koa-butterfly": "^0.1.2",
     "koa-send": "^5.0.1",
     "tapable": "^1.1.3"
   },
