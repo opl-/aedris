@@ -8,7 +8,6 @@ import {DefaultContext} from '../BuildTarget';
 import {externalsGenerator} from '../util/externals';
 
 // TODO: use file-loader, style-loader, css-loader
-// TODO: add aliases
 
 export default <WebpackConfigCreator> function createWebpackConfig(config, target) {
 	const {builder, config: aedrisConfig} = target;
@@ -40,6 +39,9 @@ export default <WebpackConfigCreator> function createWebpackConfig(config, targe
 	Object.entries(target.dynamicAppModules).forEach(([dynamicModuleName, dynamicModulePath]) => {
 		config.resolve.alias.set(`@aedris/dynamic/${dynamicModuleName}$`, dynamicModulePath);
 	});
+
+	// Create an alias for the project root
+	config.resolve.alias.set('@@', aedrisConfig.rootDir);
 
 	// Allow resolving modules from:
 	const modulePaths = [

@@ -129,6 +129,9 @@ export default <AedrisPlugin> {
 				return undefined;
 			});
 
+			// Create an alias for the backend root
+			config.resolve.alias.set('@', target.config.options[HOOK_NAME].backendDir);
+
 			return config;
 		});
 	},

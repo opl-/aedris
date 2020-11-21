@@ -1,8 +1,13 @@
 import {ExternalsQuery} from '../BuildTarget';
 
-// Adapted from https://github.com/nodejs/node/blob/7e5d5c28ad4b2578b945854894195c49470df82a/lib/internal/modules/cjs/loader.js#L497
-// `!-` are not allowed at the beginning of a request due to those being used for webpack requests (for example by the vue-loader).
-const packageNameTest = /^(?:@[^/\\%]+?[/\\])?[^./\\%!-][^/\\%]*(?=$|[/\\])/;
+/**
+ * Adapted from https://github.com/nodejs/node/blob/7e5d5c28ad4b2578b945854894195c49470df82a/lib/internal/modules/cjs/loader.js#L497
+ *
+ * `!-` are not allowed at the beginning of a request due to those being used for webpack requests (for example by the vue-loader).
+ *
+ * Includes exceptions for `~@` characters to allow `@/`, `@@/`, `~/` aliases to be used without being externalized.
+ */
+const packageNameTest = /^(?:@[^/\\%@]+?[/\\])?[^./\\%!\-~@][^/\\%]*(?=$|[/\\])/;
 
 // TODO: this might include files included from externals using relative paths
 

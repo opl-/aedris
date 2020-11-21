@@ -121,6 +121,9 @@ export default <AedrisPlugin> {
 				return undefined;
 			});
 
+			// Create an alias for the frontend root
+			config.resolve.alias.set('@', target.config.options[HOOK_NAME].frontendDir);
+
 			return config;
 		});
 	},
