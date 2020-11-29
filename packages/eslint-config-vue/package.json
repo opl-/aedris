@@ -27,6 +27,7 @@
     "url": "https://github.com/opl-/aedris/issues"
   },
   "dependencies": {
-    "@aedris/eslint-config": "^1.0.0"
+    "@aedris/eslint-config": "^1.0.0",
+    "eslint-plugin-vue": "^7.1.0"
   }
 }
