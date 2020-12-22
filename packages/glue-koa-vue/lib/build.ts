@@ -61,6 +61,8 @@ function addHMRSupport(builder: Builder) {
 			});
 
 			target.compiler!.hooks.invalid.tap(`${HOOK_NAME}:${fromTarget}`, () => {
+				if (!blockingTargets.includes(fromTarget)) blockingTargets.push(fromTarget);
+
 				sendMessage(KOA_TARGET_NAME.app.backend, {
 					t: `${HOOK_NAME}:compiler:invalid`,
 					d: {
