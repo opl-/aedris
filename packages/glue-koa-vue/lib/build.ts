@@ -40,6 +40,9 @@ function addHMRSupport(builder: Builder) {
 				name: `${HOOK_NAME}:${fromTarget}`,
 				stage: 100,
 			}, (stats) => {
+				const blockingTargetIndex = blockingTargets.indexOf(fromTarget);
+				if (blockingTargetIndex !== -1) blockingTargets.splice(blockingTargetIndex, 1);
+
 				sendMessage(KOA_TARGET_NAME.app.backend, {
 					t: `${HOOK_NAME}:compiler:done`,
 					d: {
