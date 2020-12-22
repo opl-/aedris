@@ -71,5 +71,8 @@ module.exports = {
 		'lines-between-class-members': ['error', 'always', {
 			exceptAfterSingleLine: true,
 		}],
+
+		// This is a stupid rule that just keeps creating trouble for me.
+		'class-methods-use-this': 'off',
 	},
 };
