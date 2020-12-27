@@ -72,7 +72,7 @@ export class BuildTarget {
 		afterLoad: new AsyncSeriesHook<BuildTarget>(['buildTarget']),
 		watchShouldIgnore: new SyncBailHook<string, Stats, undefined, boolean | undefined>(['filePath', 'stats']),
 		/** Used as a replacement for the webpack externals config option as webpack-chain doesn't support it. See https://github.com/neutrinojs/webpack-chain/issues/222. */
-		externalsQuery: new AsyncSeriesBailHook<ExternalsQuery, undefined, undefined, string | false | undefined>(['query']),
+		externalsQuery: new AsyncSeriesBailHook<ExternalsQuery, undefined, undefined, string | boolean | undefined>(['query']),
 	};
 
 	contextToConfigCreatorMap: Record<string, WebpackConfigCreator> = {
@@ -196,7 +196,7 @@ export class BuildTarget {
 		if (configChain.has('externals')) throw new Error('Use BuildTarget.hooks.externalsQuery for externals to allow manipulating them from other plugins');
 
 		// Construct externals
-		configChain.set('externals', (context: string, request: string, callback: (err: any, result?: string | false) => void) => {
+		configChain.set('externals', (context: string, request: string, callback: (err: any, result?: string | boolean) => void) => {
 			this.hooks.externalsQuery.promise({
 				context,
 				request,
