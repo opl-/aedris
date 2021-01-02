@@ -22,7 +22,7 @@ function addHMRSupport(builder: Builder) {
 			const hmrPlugin = target.builder.getPluginInstance('@aedris/plugin-hmr');
 
 			const entryProcess = hmrPlugin.targetRunners[KOA_TARGET_NAME.app.backend]?.entryProcess.backend;
-			if (!entryProcess) return;
+			if (!entryProcess || !entryProcess.connected) return;
 
 			entryProcess.send(message);
 		}
