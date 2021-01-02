@@ -114,9 +114,9 @@ export class BuildTask extends Task<typeof BuildTask> {
 		builder.hooks.afterRawConfig.tapPromise(HOOK_NAME, async (b) => {
 			if (b.config.plugins.length === 0) return;
 
-			log('Building local plugins');
+			log('Rewriting local plugin paths');
 
-			await buildLocalPlugins(b.config);
+			await buildLocalPlugins(b.config, true);
 		});
 	}
 }

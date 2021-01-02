@@ -45,7 +45,7 @@ function registerProjectPathOptions(y: Argv) {
 	});
 
 	toolsManager.hooks.afterRawConfig.tapPromise(HOOK_NAME, async () => {
-		await buildLocalPlugins(toolsManager.config);
+		await buildLocalPlugins(toolsManager.config, true);
 	});
 
 	await toolsManager.load();

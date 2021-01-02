@@ -14,8 +14,9 @@ const log = debug('aedris:build-tools:BuildTask');
  * Compiles local plugins written in TypeScript.
  *
  * @param config Config used to identify the local plugins. Will be modified to adjust the local plugin locations.
+ * @param skipBuild Prevents the function from rebuilding the configs, making it only rewrite the plugin paths. Setting this to `true` may break the build if no compiled version of the script is cached.
  */
-export async function buildLocalPlugins(config: AedrisPluginConfig) {
+export async function buildLocalPlugins(config: AedrisPluginConfig, skipBuild = false) {
 	if (config.plugins.length === 0) return;
 
 	const localPluginPaths: string[] = [];
@@ -30,9 +31,9 @@ export async function buildLocalPlugins(config: AedrisPluginConfig) {
 		return path.resolve(LOCAL_PLUGIN_OUTPUT_DIR, path.dirname(plugin), `${path.basename(plugin, '.ts')}.js`);
 	});
 
-	log('Found %i local plugins to compile', localPluginPaths.length);
+	log('Found %i local plugins', localPluginPaths.length);
 
-	if (localPluginPaths.length > 0) {
+	if (localPluginPaths.length > 0 && !skipBuild) {
 		// Create a new Builder to build the local plugins
 		const localPluginBuilder = new Builder({
 			config: AedrisConfigHandler.normalizeConfig(config.rootDir, {
