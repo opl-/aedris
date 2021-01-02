@@ -173,7 +173,8 @@ export class TargetRunner {
 		return new Promise((resolve, reject) => {
 			// For some reason node devs decided that throwing errors that they have access to immediately would be stupid, and that instead they should emit them as an event in the next tick. Hence why this mess to detect errors happening on start.
 			let errored = false;
-			proc.once('error', (err) => {
+
+			const listener = (err: Error) => {
 				errored = true;
 
 				// The process failed to start - remove references to it
@@ -181,9 +182,11 @@ export class TargetRunner {
 				delete this.entryProcessStatus[entryPointName];
 
 				reject(err);
-			});
+			};
+
+			proc.once('error', listener);
 			process.nextTick(() => {
-				proc.off('error', reject);
+				proc.off('error', listener);
 
 				if (!errored) resolve(proc);
 			});
