@@ -56,7 +56,7 @@ function addHMRSupport(builder: Builder) {
 			printOutput: true,
 			args: [
 				// TODO: use config
-				'dist/backend/backend.js',
+				'backend/backend.js',
 			],
 		};
 

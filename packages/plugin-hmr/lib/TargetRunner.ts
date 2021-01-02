@@ -1,6 +1,7 @@
 import {BuildTarget} from '@aedris/build-tools';
 import cp, {ChildProcess, ChildProcessWithoutNullStreams} from 'child_process';
 import debug from 'debug';
+import path from 'path';
 import {Compiler} from 'webpack';
 
 import {HMRPluginOptions} from './HMRPluginOptions';
@@ -130,7 +131,7 @@ export class TargetRunner {
 			shell: false,
 			// Open an IPC channel on top of all the other channels
 			stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-			cwd: options.cwd || this.target.config.rootDir,
+			cwd: options.cwd || path.resolve(this.target.config.rootDir, this.target.config.outputDir),
 		}) as ChildProcessWithoutNullStreams; // TODO: definitelytyped types for node are invalid with additional stdio args. open an issue/PR
 
 		// Pipe the child process outputs through the parent process outputs

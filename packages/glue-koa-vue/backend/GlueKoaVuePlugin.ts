@@ -38,8 +38,8 @@ export class GlueKoaVuePlugin implements RuntimePlugin {
 	createBundleRenderer() {
 		try {
 			// TODO: config
-			this.bundleRenderer = createBundleRenderer(path.resolve(APP_ROOT, 'dist/frontend-server/vue-ssr-server-bundle.json'), {
-				clientManifest: JSON.parse(fs.readFileSync(path.resolve(APP_ROOT, 'dist/frontend-client/vue-ssr-client-manifest.json'), 'utf8')),
+			this.bundleRenderer = createBundleRenderer(path.resolve(APP_ROOT, 'frontend-server/vue-ssr-server-bundle.json'), {
+				clientManifest: JSON.parse(fs.readFileSync(path.resolve(APP_ROOT, 'frontend-client/vue-ssr-client-manifest.json'), 'utf8')),
 				template: htmlTemplate,
 			});
 		} catch (ex) {

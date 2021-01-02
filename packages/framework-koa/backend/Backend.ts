@@ -25,7 +25,7 @@ export class Backend extends Koa {
 		this.backendRouter.get('/res/:path+', async (ctx) => {
 			try {
 				await koaSend(ctx, ctx.params.path, {
-					root: path.resolve(APP_ROOT, 'dist/frontend-client/'),
+					root: path.resolve(APP_ROOT, 'frontend-client/'),
 				});
 			} catch (ex) {
 				if (ex.status !== 404) throw ex;
